@@ -1,0 +1,24 @@
+name: pip2_segmentation
+channels:
+  - pytorch
+  - conda-forge
+  - defaults
+dependencies:
+  - python
+  - jupyterlab
+  - pip
+  - numpy
+  - matplotlib
+  - pandas
+  - scipy
+  - scikit-image
+  - tifffile
+  - scikit-learn
+  - seaborn
+  - cpuonly
+  - pytorch
+  - torchvision
+  - torchaudio
+  - pip:
+    - roifile
+
