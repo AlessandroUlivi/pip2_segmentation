@@ -219,7 +219,20 @@ def make_train_datasets(input_data_dir, labels_data_dir, transform=None, validat
     Loads the dataset. Splits train and validation sub-datasets. Applies tranformations, if required.
 
     Inputs:
+    - input_data_dir; the directory of the input data. It is expected that only the files to be used as input data are found in the directory. Input data must
+    have the same shape.
+    - labels_data_dir; the directory of labels data. It is expected that only the files to be used as input data are found in the directory. The names of the labels
+    data is expected to match the name of the corresponding input data.
+    - transform. None or iterable. Default None. If None, minimal data transformations to have data prepared for PyTorch, will be applied
+    (see get_default_transform). If iterable, a list-like object must be passed, containing the funtions to apply. Functions will be applied,
+    sequentially from position 0 to position -1.
+    - validation_fraction. float. Optional. Defauls 0.2. The fraction of data to use as validation dataset.
+    - stack_axis. Optional. Defauls 0. The axis along which data are stacked in the output arrays.
+    - shuffle_data. Bool. Optional. Defaul True. Whether or not to shuffle data before splitting.
 
+    Outputs: tuple.
+    - position 0. Dataset class from  DatasetWithTransform(Dataset) for the input_data.
+    - position 1. Dataset class from  DatasetWithTransform(Dataset) for the labels.
     """
     #load input data and corresponding labels
     images, labels = load_dataset(input_data_dir, labels_data_dir, stack_axis=stack_axis)
