@@ -33,6 +33,7 @@ def load_dataset(input_data_dir, labels_data_dir, stack_axis=0):
     Outputs: tuple.
     - position 0. np.array. Inputs data are stacked along stack_axis.
     - position 1. np.array. Labels data are stacked along stack_axis. The position along stack_axis matches the position of the corresponding input data.
+    NOTE: data are not shuffled, their order relies on the os.listdir function.
     """
     #initialize a collection list for the input data and a collection list for the corresponding labels
     input_data_l = []
@@ -59,5 +60,33 @@ def load_dataset(input_data_dir, labels_data_dir, stack_axis=0):
 
     return images, labels
 
+
+def make_dataset_train_val_split(images, labels, validation_fraction=0.20, shuffle_data=True):
+    """
+    splits inputs data and matching labels into train and validation sub-sets.
+
+    Inputs:
+    - images. np.array.
+    - labels. np.array. The size of labels axis 0 (shape[0]) must match the size of images axis 0 (shape[0]).
+    - validation_fraction. float. Optional. Defauls 0.2. The fraction of data to use as validation dataset.
+    - shuffle_data. Bool. Optional. Defaul True. Whether or not to shuffle data before splitting.
+
+    Outputs: tuple.
+    - position 0. np.array. Sub-array of images along axis 0. The size of axis 0 corresponds to 1-validation_fraction of the original axis 0 size.
+    - position 1. np.array. Sub-array of images along axis 0. The size of axis 0 corresponds to validation_fraction of the original axis 0 size.
+    - position 2. np.array. Sub-array of labels along axis 0. The size of axis 0 corresponds to 1-validation_fraction of the original axis 0 size.
+    - position 3. np.array. Sub-array of labels along axis 0. The size of axis 0 corresponds to validation_fraction of the original axis 0 size.
+
+    """
+    #splits images and labels in train and validation datasets
+    (train_images, val_images,
+     train_labels, val_labels) = train_test_split(images, labels, shuffle=shuffle_data,
+                                                  test_size=validation_fraction)
+    #check that the splitting was correctly done
+    assert len(train_images) == len(train_labels)
+    assert len(val_images) == len(val_labels)
+    assert len(train_images) + len(val_images) == len(images)
+    
+    return train_images, train_labels, val_images, val_labels
 
 
