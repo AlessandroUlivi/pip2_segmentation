@@ -252,29 +252,30 @@ def make_train_datasets(input_data_dir, labels_data_dir, transform=None, validat
     return train_dataset, val_dataset
 
 
-# def make_test_dataset(input_data_dir, labels_data_dir, transform=None, stack_axis=0):
-#     """
-#     Loads the test dataset. Applies tranformations, if required.
+def make_test_dataset(input_data_dir, labels_data_dir, transform=None, stack_axis=0):
+    """
+    Loads the test dataset. Applies tranformations, if required.
 
-#     Inputs:
-#     - input_data_dir; the directory of the input data. It is expected that only the files to be used as input data are found in the directory. Input data must
-#     have the same shape.
-#     - labels_data_dir; the directory of labels data. It is expected that only the files to be used as input data are found in the directory. The names of the labels
-#     data is expected to match the name of the corresponding input data.
-#     - transform. None or iterable. Default None. If None, minimal data transformations to have data prepared for PyTorch, will be applied
-#     (see get_default_transform). If iterable, a list-like object must be passed, containing the funtions to apply. Functions will be applied,
-#     sequentially from position 0 to position -1.
-#     - stack_axis. Optional. Defauls 0. The axis along which data are stacked in the output arrays.
+    Inputs:
+    - input_data_dir; the directory of the input data. It is expected that only the files to be used as input data are found in the directory. Input data must
+    have the same shape.
+    - labels_data_dir; the directory of labels data. It is expected that only the files to be used as input data are found in the directory. The names of the labels
+    data is expected to match the name of the corresponding input data.
+    - transform. None or iterable. Default None. If None, minimal data transformations to have data prepared for PyTorch, will be applied
+    (see get_default_transform). If iterable, a list-like object must be passed, containing the funtions to apply. Functions will be applied,
+    sequentially from position 0 to position -1.
+    - stack_axis. Optional. Defauls 0. The axis along which data are stacked in the output arrays.
 
-#     Outputs: Dataset class from DatasetWithTransform(Dataset) for the input_data and corresponding labels.
-#     """
-#     #load input data and corresponding labels
-#     images, labels = load_dataset(input_data_dir, labels_data_dir, stack_axis=stack_axis)
+    Outputs: Dataset class from DatasetWithTransform(Dataset) for the input_data and corresponding labels.
+    """
+    #load input data and corresponding labels
+    images, labels = load_dataset(input_data_dir, labels_data_dir, stack_axis=stack_axis)
 
-#     #get default the minimum transformations to apply to the dataset if tranforms is set to None
-#     if transform is None:
-#         transform = get_default_transform()
+    #get default the minimum transformations to apply to the dataset if tranforms is set to None
+    if transform is None:
+        transform = get_default_transform()
+    
+    #Instantiate the test dataset class
+    dataset = DatasetWithTransform(images, labels, transform=transform)
 
-#     dataset = DatasetWithTransform(images, labels, transform=transform)
-
-#     return dataset
+    return dataset
