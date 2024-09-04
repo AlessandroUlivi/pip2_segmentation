@@ -1,11 +1,12 @@
 # the present functions are adapted from https://github.com/dl4mia/DL4MIA_Pre-course_Webinar/blob/main/notebooks/utils.py
 
 import os
-# from functools import partial
+from functools import partial
 # from itertools import product
 
 import numpy as np
 import torch
+from torch.utils.data import Dataset
 # import torch.nn as nn
 # import torch.nn.functional as F
 
@@ -170,3 +171,30 @@ def compose(image, target, transforms):
         image, target = trafo(image, target)
     return image, target
 
+
+class DatasetWithTransform(Dataset): #Dataset (from pytorch.utils.data) is sub-classed. This allows to inherit properties from the Dataset module
+    """
+    Minimal dataset class. It holds data and target
+    as well as optional transforms that are applied to data and target data is requested.
+    """
+
+    #initialize variables in the class
+    def __init__(self, data, target, transform=None):
+        assert isinstance(data, np.ndarray)
+        assert isinstance(target, np.ndarray)
+        self.data = data
+        self.target = target
+        if transform is not None:
+            assert callable(transform)
+        self.transform = transform
+
+    # gets the image-target pair at index=index in the dataset. Applies transformations if required
+    def __getitem__(self, index):
+        data, target = self.data[index], self.target[index]
+        if self.transform is not None:
+            data, target = self.transform(data, target)
+        return data, target
+
+    #get the length of the dataset
+    def __len__(self):
+        return self.data.shape[0]
