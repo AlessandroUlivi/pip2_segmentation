@@ -1,5 +1,6 @@
 import os
 import numpy as np
+import random
 
 
 def listdirNHF(input_directory):
@@ -38,3 +39,23 @@ def check_files_else_make_folders(folder_dir_to_create):
         else:
             #return False as no file is present in the folder
             return False
+
+def get_random_image_label_pair(images, labels):
+    """
+    returns a randomly chosen image and the correponding label
+
+    Input:
+    - images. np.array.
+    - labels. np.array. The size of the axis 0 (shape[0]) must match the size of images.
+
+    Output: tuple.
+    - position 0. np.array. Sub-array of images randomly picked from the axis 0.
+    - position 1. np.array. Sub-array of labels picked from the axis 0 in the position matching position 0 output.
+
+    """
+
+    #get a random index along the axis 0 of images
+    random_indx = random.choice(range(images.shape[0]))
+
+    return images[random_indx, ...], labels[random_indx, ...]
+
