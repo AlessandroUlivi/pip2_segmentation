@@ -24,6 +24,9 @@ Dependencies: The pip2_segmentation.yml allows to create an environment with all
 - pytorch 2.4.0
 - torchvision 0.19.0
 - torchaudio 2.4.0
+- tensorboard 2.17.0
 - roifile 2024.5.24
+
+NOTE: the environment is set up to run on cpu (package cpuonly - pytorch Build py3.12_cpu_0).
 
 Roadmap:
