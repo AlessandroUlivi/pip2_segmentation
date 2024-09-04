@@ -2,21 +2,10 @@
 
 import os
 from functools import partial
-# from itertools import product
-
 import numpy as np
 import torch
 from torch.utils.data import Dataset
-# import torch.nn as nn
-# import torch.nn.functional as F
-
-# from torch.optim.lr_scheduler import ReduceLROnPlateau
-# from torch.utils.tensorboard import SummaryWriter
-
-# import sklearn.metrics as metrics
 from sklearn.model_selection import train_test_split
-
-# from imageio import imread
 import tifffile
 from utils import listdirNHF
 
