@@ -5,7 +5,7 @@ import os
 # from itertools import product
 
 import numpy as np
-# import torch
+import torch
 # import torch.nn as nn
 # import torch.nn.functional as F
 
@@ -109,7 +109,7 @@ def add_channel(image, target, axis_to_use=0):
     return image_w_c, target
 
 
-def normalize(image, target, channel_wise=True):
+def normalize(image, target):
     """
     returns the min-max normalization of a image.
     Inputs:
@@ -134,3 +134,22 @@ def normalize(image, target, channel_wise=True):
     #divide the image for the maximum value NOTE: add eps to maximum value to prevent a 0 division
     image /= (chan_max + eps)
     return image, target
+
+
+# finally, we need to transform our input from a numpy array to a torch tensor
+def to_tensor(image, target):
+    """
+    transfom image-target pair of numpy array to a pair of tensors
+    Inputs:
+    - image. np.array. channel dimension in position 0.
+    - target. np.array.
+
+    Outputs: tuple.
+    - position 0. image transformed to tensor
+    - position 1. target transformed to tensor
+
+    """
+    return torch.from_numpy(image), torch.tensor([target], dtype=torch.int64)
+
+
+
