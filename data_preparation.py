@@ -198,3 +198,52 @@ class DatasetWithTransform(Dataset): #Dataset (from pytorch.utils.data) is sub-c
     #get the length of the dataset
     def __len__(self):
         return self.data.shape[0]
+
+
+def get_default_transform():
+    """
+    Returns a series of the minimal transformations to images which should be done for preparing the dataset for being passed to PyTorch.
+    Functions application is chained by exploiting the partial function, thus allowing to share inputs across the transformations.
+    This is also possible as the transformations share the same inputs.
+
+    The minimal transformations are, sequentially, addition of the channel dimension to data, in the position 0. The min-max normalization of the
+    data. The transformation of the data to tensors.
+    """
+    trafos = [add_channel, normalize, to_tensor]
+    trafos = partial(compose, transforms=trafos)
+    return trafos
+
+
+def make_train_datasets(input_data_dir, labels_data_dir, transform=None, validation_fraction=0.20, stack_axis=0, shuffle_data=True):
+    """
+    Loads the dataset. Splits train and validation sub-datasets. Applies tranformations, if required.
+
+    Inputs:
+
+    """
+    #load input data and corresponding labels
+    images, labels = load_dataset(input_data_dir, labels_data_dir, stack_axis=stack_axis)
+    
+    #split data in tran and validation datasets
+    (train_images, train_labels,
+     val_images, val_labels) = make_dataset_train_val_split(images, labels, validation_fraction=validation_fraction, shuffle_data=shuffle_data)
+
+    #get default the minimum transformations to apply to the dataset if tranforms is set to None
+    if transform is None:
+        transform = get_default_transform()
+    
+    #Instantiate the train and validation dataset classes 
+    train_dataset = DatasetWithTransform(train_images, train_labels, transform=transform)
+    val_dataset = DatasetWithTransform(val_images, val_labels, transform=transform)
+
+    return train_dataset, val_dataset
+
+
+# def make_cifar_test_dataset(cifar_dir, transform=None):
+#     images, labels = load_cifar(os.path.join(cifar_dir, 'test'))
+
+#     if transform is None:
+#         transform = get_default_cifar_transform()
+
+#     dataset = DatasetWithTransform(images, labels, transform=transform)
+#     return dataset
