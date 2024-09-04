@@ -104,18 +104,18 @@ def normalize(image, target):
     returns the min-max normalization of a image.
     Inputs:
     - image. 3D np.array. channel dimension in position 0.
-    - target. anything.
+    - target. np.array.
 
     Outputs: tuple.
-    - position 0. np.array. min-max normalized image on axes 1 and 2.
-    - position 1. target.
-    - 
+    - position 0. np.array. min-max normalized image on axes 1 and 2. dtype float32.
+    - position 1. np.array. target image rescaled to range 0 and 1. dtype float32
     """
     #initialize a small variable, to prevent a 0 division
     eps = 1.e-6
-    #transform image to 'float32' dtype, for allowing a correct division calculation
+    #transform image and target to 'float32' dtype, for allowing a correct division calculation
     image = image.astype('float32')
-    #calculate the minumum of the image using the axes 1 and 2
+    target = target.astype('float32')
+    #calculate the minumum of the image using the axes 1 and 2 and the minimum of the target using the axis 0 and 2.
     chan_min = image.min(axis=(1, 2), keepdims=True)
     #subtract the minimum from the image
     image -= chan_min
@@ -123,7 +123,9 @@ def normalize(image, target):
     chan_max = image.max(axis=(1, 2), keepdims=True)
     #divide the image for the maximum value NOTE: add eps to maximum value to prevent a 0 division
     image /= (chan_max + eps)
-    return image, target
+    #rescale target image to range 0 and 1
+    rescaled_target = np.where(target>0, 1.0, 0.0)
+    return image, rescaled_target
 
 
 def to_tensor(image, target):
