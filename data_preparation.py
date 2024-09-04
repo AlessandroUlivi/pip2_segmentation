@@ -136,7 +136,6 @@ def normalize(image, target):
     return image, target
 
 
-# finally, we need to transform our input from a numpy array to a torch tensor
 def to_tensor(image, target):
     """
     transfom image-target pair of numpy array to a pair of tensors
@@ -152,4 +151,22 @@ def to_tensor(image, target):
     return torch.from_numpy(image), torch.tensor([target], dtype=torch.int64)
 
 
+def compose(image, target, transforms):
+    """
+    applies a series of functions, sequentially, to an image-target pair.
+
+    Inputs:
+    - image. np.array.
+    - target. np.array.
+    - transforms. iterable. list-like object with the funtions to apply. Functions will be applied, sequentially from position 0 to position -1.
+
+    Outputs: tuple.
+    - position 0. tranformed image.
+    - position 1. transformed target.
+    """
+    #iterate through the functions of transforms
+    for trafo in transforms:
+        #apply function to image and target
+        image, target = trafo(image, target)
+    return image, target
 
