@@ -86,7 +86,51 @@ def make_dataset_train_val_split(images, labels, validation_fraction=0.20, shuff
     assert len(train_images) == len(train_labels)
     assert len(val_images) == len(val_labels)
     assert len(train_images) + len(val_images) == len(images)
-    
+
     return train_images, train_labels, val_images, val_labels
 
 
+def add_channel(image, target, axis_to_use=0):
+    """
+    Add an extra dimension to images at position axis_to_use.
+    NOTE: Although the position can be changed, this is meant to be done so that it could be interpreted as the color channel dimension by PyTorch. Final output (CWH)
+    
+    Inputs:
+    - image. np.array.
+    - target. anything.
+
+    Outputs: tuple.
+    - position 0. np.array. Image with extra dimension of size 1 in position axis_to_use.
+    - position 1. target.
+
+    """
+    # put channel first
+    image_w_c = np.expand_dims(image, axis=axis_to_use)
+    return image_w_c, target
+
+
+def normalize(image, target, channel_wise=True):
+    """
+    returns the min-max normalization of a image.
+    Inputs:
+    - image. 3D np.array. channel dimension in position 0.
+    - target. anything.
+
+    Outputs: tuple.
+    - position 0. np.array. min-max normalized image on axes 1 and 2.
+    - position 1. target.
+    - 
+    """
+    #initialize a small variable, to prevent a 0 division
+    eps = 1.e-6
+    #transform image to 'float32' dtype, for allowing a correct division calculation
+    image = image.astype('float32')
+    #calculate the minumum of the image using the axes 1 and 2
+    chan_min = image.min(axis=(1, 2), keepdims=True)
+    #subtract the minimum from the image
+    image -= chan_min
+    #calculate the maximum of the image using the axes 1 and 2
+    chan_max = image.max(axis=(1, 2), keepdims=True)
+    #divide the image for the maximum value NOTE: add eps to maximum value to prevent a 0 division
+    image /= (chan_max + eps)
+    return image, target
