@@ -26,6 +26,9 @@ class ConvBlock(torch.nn.Module):
             padding (str, optional): The type of padding to use. Options are "same" or "valid".
                 Defaults to "same".
         """
+        #call the bound __init__ from the parent class (torch.nn.Module) that follows the child class (ConvBlock).
+        #refer to https://stackoverflow.com/questions/222877/what-does-super-do-in-python-difference-between-super-init-and-expl
+        #refer to https://stackoverflow.com/questions/576169/understanding-python-super-with-init-methods
         super().__init__()
 
         # determine padding size based on method
@@ -36,7 +39,7 @@ class ConvBlock(torch.nn.Module):
         else:
             raise RuntimeError("invalid string value for padding")
 
-        # define layers in conv pass
+        # define layers in conv pass - NOTE the use of 2D convolution and ReLu activation function. Also note the fact that 2 convolution (and following ReLu) are implemented
         self.conv_pass = torch.nn.Sequential(
             torch.nn.Conv2d(
                 in_channels, out_channels, kernel_size=kernel_size, padding=pad
@@ -48,7 +51,7 @@ class ConvBlock(torch.nn.Module):
             torch.nn.ReLU(),
         )
 
-        #maintains some constant variability across the process
+        #initialize the weights of the convolutional block
         for _name, layer in self.named_modules():
             if isinstance(layer, torch.nn.Conv2d):
                 torch.nn.init.kaiming_normal_(layer.weight, nonlinearity="relu")
@@ -59,7 +62,14 @@ class ConvBlock(torch.nn.Module):
 
 
 class Downsample(torch.nn.Module):
+    """
+    2D downsampling class for a unet. The downsampling m
+    It is possible to specify the downsampling factor using the parameter downsample_factor (int). 
+    """
     def __init__(self, downsample_factor: int):
+        #call the bound __init__ from the parent class (torch.nn.Module) that follows the child class (ConvBlock).
+        #refer to https://stackoverflow.com/questions/222877/what-does-super-do-in-python-difference-between-super-init-and-expl
+        #refer to https://stackoverflow.com/questions/576169/understanding-python-super-with-init-methods
         super().__init__()
 
         self.downsample_factor = downsample_factor
