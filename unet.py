@@ -58,13 +58,17 @@ class ConvBlock(torch.nn.Module):
 
     #define forward function, required for PyTorch to take advantage of the ConvBlock class behind the scene
     def forward(self, x):
+        """
+        applies the convolutional block to a 3D tensor (x, CYX) and returns the result.
+        """
         return self.conv_pass(x)
 
 
 class Downsample(torch.nn.Module):
     """
-    2D downsampling class for a unet. The downsampling m
-    It is possible to specify the downsampling factor using the parameter downsample_factor (int). 
+    Downsampling class for a unet. Performs a 2D downsampling using max-pooling as a default method.
+    It is possible to specify the downsampling factor using the parameter downsample_factor (int). Each size of the input image must be dividable by the
+    downsampling_factor (no remainder must be present).
     """
     def __init__(self, downsample_factor: int):
         #call the bound __init__ from the parent class (torch.nn.Module) that follows the child class (ConvBlock).
@@ -74,6 +78,7 @@ class Downsample(torch.nn.Module):
 
         self.downsample_factor = downsample_factor
 
+        #defines the downsampling operation (max-pooling)
         self.down = torch.nn.MaxPool2d(
             downsample_factor
         ) 
@@ -88,6 +93,10 @@ class Downsample(torch.nn.Module):
     
     #define forward function, required for PyTorch to take advantage of the Downsample class behind the scene
     def forward(self, x):
+        """
+        applies downsample to a 3D tensor (x, CYX) and returns the result.
+        Raises an error if the at least one of the YX dimensions is not dividable by self.downsample_factor (see above).
+        """
         if not self.check_valid(tuple(x.size()[-2:])): #only the last 2 dimensions matter, as the output of the convolutional block is 3D where channels are in position 1
             raise RuntimeError(
                 "Can not downsample shape %s with factor %s"
