@@ -1,4 +1,5 @@
 # the present functions are adapted from https://github.com/AlessandroUlivi/The_segmenters/blob/main/source/unet.py
+# they are based on https://github.com/dl4mia/01_segmentation
 
 import math
 import torch
@@ -110,6 +111,7 @@ class Downsample(torch.nn.Module):
 class CropAndConcat(torch.nn.Module):
     """
     Implements the skip connections between downsampling (descending) half and upsampling (ascending) parts of the U-net.
+    NOTE: as indicated above, the function is taken from https://github.com/dl4mia/01_segmentation I am not 100% sure why there is no init function
     """
     def crop(self, x, y):
         """
@@ -145,20 +147,36 @@ class CropAndConcat(torch.nn.Module):
         return torch.cat([encoder_cropped, upsample_output], dim=1)
 
 class OutputConv(torch.nn.Module):
+    """
+    the final convolution block of the u-net network. It should be encoded separately because it could be different from the other blocks, notably in the
+    fact that the number of channel output could be inputed by the user (in the full u-net architecture - the UNet class below - the input and output channels
+    of each layer are automatically calculated) depending on their needs, and also the final activation function can be inputed by the user.
+    """
     def __init__(
         self,
         in_channels: int,
         out_channels: int,
-        activation: str | None = None,  # Accepts the name of any torch activation function (e.g., ``ReLU`` for ``torch.nn.ReLU``).
+        activation: str | None = None,  # Accepts the name of any torch activation function (e.g., ``ReLU`` for ``torch.nn.ReLU``). Refer to https://docs.python.org/3/library/functions.html#getattr and to https://discuss.pytorch.org/t/call-activation-function-from-string/30857
     ):
+        
+        #call the bound __init__ from the parent class (torch.nn.Module) that follows the child class (ConvBlock).
+        #refer to https://stackoverflow.com/questions/222877/what-does-super-do-in-python-difference-between-super-init-and-expl
+        #refer to https://stackoverflow.com/questions/576169/understanding-python-super-with-init-methods
         super().__init__()
-        self.final_conv = torch.nn.Conv2d(in_channels, out_channels, 1, padding=0) # leave this out
+        
+        #the last convolun uses a kernel of size 1 (no convolution is done) and no padding. This simply allows to define the number of channels of the output
+        self.final_conv = torch.nn.Conv2d(in_channels, out_channels, 1, padding=0)
         if activation is None:
             self.activation = None
         else:
+            #if an activation function is indicatded, get it among the available in pytorch
             self.activation = getattr(torch.nn, activation)()
 
+    #define forward function, required for PyTorch to take advantage of the Downsample class behind the scene
     def forward(self, x):
+        """
+        applies the final convolution and, if indicated, the final activation function
+        """
         x = self.final_conv(x)
         if self.activation is not None:
             x = self.activation(x)
