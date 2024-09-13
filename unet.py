@@ -135,7 +135,7 @@ class CropAndConcat(torch.nn.Module):
 
         return x[slices]
 
-    #define forward function, required for PyTorch to take advantage of the Downsample class behind the scene
+    #define forward function, required for PyTorch to take advantage of the CropAndConcat class behind the scene
     def forward(self, encoder_output, upsample_output):
         """
         applies crop in order to crop the outer part of each dimension of the encoder_output so that it matches the
@@ -172,7 +172,7 @@ class OutputConv(torch.nn.Module):
             #if an activation function is indicatded, get it among the available in pytorch
             self.activation = getattr(torch.nn, activation)()
 
-    #define forward function, required for PyTorch to take advantage of the Downsample class behind the scene
+    #define forward function, required for PyTorch to take advantage of the OutputConv class behind the scene
     def forward(self, x):
         """
         applies the final convolution and, if indicated, the final activation function
@@ -243,7 +243,10 @@ class UNet(torch.nn.Module):
         self.padding = padding
         self.upsample_mode = upsample_mode
 
-        # left convolutional passes
+        # CREATE THE LEFT CONVOLUTIONAL BLOCKS - the descending/downsampling part
+        # Iterate through the layers of the network (specified by the depth). Per each layer, 1) Calculate, automatically using the compute_fmaps_encoder function
+        # the number of input and output channels of the convolutional block. 2) Create the convolutional block (using the ConvBlock class above) with the appropriate
+        # number of input and output channels. 3) Add the convolutional block to a collection list.
         self.left_convs = torch.nn.ModuleList()
         for level in range(self.depth):
             fmaps_in, fmaps_out = self.compute_fmaps_encoder(level)
@@ -256,7 +259,11 @@ class UNet(torch.nn.Module):
                 )
             )
 
-        # right convolutional passes
+        # CREATE THE RIGHT CONVOLUTIONAL BLOCKS - the ascending/upsampling part
+        # Iterate through the layers of the network (specified by the depth) - 1 (as the last, bottomw layer is created during the descending part).
+        # Per each layer, 1) Calculate, automatically using the compute_fmaps_decoder function the number of input and output channels of the convolutional
+        # block. 2) Create the convolutional block (using the ConvBlock class above) with the appropriate number of input and output channels.
+        # 3) Add the convolutional block to a collection list.
         self.right_convs = torch.nn.ModuleList()
         for level in range(self.depth - 1):
             fmaps_in, fmaps_out = self.compute_fmaps_decoder(level)
@@ -269,14 +276,23 @@ class UNet(torch.nn.Module):
                 )
             )
         
+        #Instantiate the downsampling object
         self.downsample = Downsample(self.downsample_factor)
 
+        #Instantiate the upsampling object
         #NOTE WELL! THE UPSAMPLING FUNCTION EXPECTS 4D INPUTS (MINIBATCH, CHANNEL, HEIGHT, WIDTH)...I'LL HAVE TO CHECK THAT THIS HAPPENS
         self.upsample = torch.nn.Upsample(
                     scale_factor=self.downsample_factor,
                     mode=self.upsample_mode,
                 )
+        
+        #Instantiate the crop-and-concat object - it allows to create the skip connection across left and right parts of the u-net, and it is based on the
+        #CropAndConcat class defined above
         self.crop_and_concat = CropAndConcat()
+
+        #Instantiate the object to perform the final convolution - it allows to specify the final number of channels of the output as well as the final
+        #activation function - it is based on the OutputCov class above
+        #note that the input channels are computed using the compute_fmaps_decoder function for the level 0 and taking the output in position 1 (the output channels)
         self.final_conv = OutputConv(
             self.compute_fmaps_decoder(0)[1], self.out_channels, self.final_activation
         )
@@ -293,11 +309,14 @@ class UNet(torch.nn.Module):
         Output (tuple[int, int]): The number of input and output feature maps
             of the encoder convolutional pass in the given level.
         """
+        #use the input in_channels as input channels of the convolutional block, if level 0
         if level == 0:  # Leave out function
             fmaps_in = self.in_channels
         else:
+            #get the number of channels output by the former level as input of the current level
             fmaps_in = self.num_fmaps * self.fmap_inc_factor ** (level - 1)
 
+        #increase the number of channels of an exponential fmap_inc_factor at each lever - identical for the encoder and the decoder
         fmaps_out = self.num_fmaps * self.fmap_inc_factor**level
         return fmaps_in, fmaps_out
 
@@ -315,35 +334,54 @@ class UNet(torch.nn.Module):
         Output (tuple[int, int]): The number of input and output feature maps
             of the encoder convolutional pass in the given level.
         """
+        #increase the number of channels of an exponential fmap_inc_factor at each level - identical for the encoder and the decoder
         fmaps_out = self.num_fmaps * self.fmap_inc_factor ** (level)  # Leave out function
-        concat_fmaps = self.compute_fmaps_encoder(level)[
-            1
-        ]  # The channels that come from the skip connection
+        
+        #at each level, the number of input channels is the channel that comes from the skip connection (the output of the level in the encoder part) plus the ouput of the level at higher depth (lower in the u-net)
+        concat_fmaps = self.compute_fmaps_encoder(level)[1]  # The channels that come from the skip connection - note that it is taken the output in position 1 of the tuple output of compute_fmaps_encoder (which are the channel outputs of the same level in the encoder part)
         fmaps_in = concat_fmaps + self.num_fmaps * self.fmap_inc_factor ** (level + 1)
-
         return fmaps_in, fmaps_out
 
+    #define forward function, required for PyTorch to take advantage of the Downsample class behind the scene
     def forward(self, x):
-        # left side
+        """
+        process x through the full steps of the u-net architecture.
+        """
+        # LEFT SIDE - DESCENDING/DOWNSAMPLING SIDE
+        #initialize a list to collect the ouputs of the convolutional blocks during the descending part - it will be used for the skip connections
         convolution_outputs = []
+        #initialize the layer_input as the input x
         layer_input = x
-        for i in range(self.depth - 1):  # leave out center of for loop
+        #iterate through the descending levels, but leave out the bottom level
+        for i in range(self.depth - 1):  # -1 allows to leave out the bottom level
+            #get the convolutional block corresponding at level i from the list of convolutional blocks assembled by the left_convs method. Pass the layer_input to it.
             conv_out = self.left_convs[i](layer_input)
+            #append the ouput to the collection list
             convolution_outputs.append(conv_out)
+            #downsample the output of the convolutional block using the downsample object
             downsampled = self.downsample(conv_out)
+            #update layer_input, so that the output of the downsampling will be inputed to the convolutional block of the next (lower) level
             layer_input = downsampled
 
-        # bottom
+        # BOTTOM LEVEL
+        #get the convolutional block corresponding at bottom level from the list of convolutional blocks assembled by the left_convs method. Pass the layer_input to it.
         conv_out = self.left_convs[-1](layer_input)
+        #update the layer_input with the output of the bottom convolutional block (this is different than before, where the output of the downsampling was used)
         layer_input = conv_out
 
-        # right
-        for i in range(0, self.depth-1)[::-1]:  # leave out center of for loop
+        # RIGHT SIDE - ASCENDING/UPSAMPLING SIDE
+        #iterate through the levels in an ascending order. Leave out the bottom level
+        for j in range(0, self.depth-1)[::-1]:  # -1 allows to leave out the bottom level. The [::-1] inverts the order of the levels so that they are ascending
+            #use the upsample object to upsample the data (the layer_input)
             upsampled = self.upsample(layer_input)
-            concat = self.crop_and_concat(convolution_outputs[i], upsampled)
-            conv_output = self.right_convs[i](concat)
+            #concatenate the output of the descending convolutional block from the level j (collected in the list convolution_outputs) and the upsampled data result
+            concat = self.crop_and_concat(convolution_outputs[j], upsampled)
+            #get the convolutional block corresponding at level j from the list of convolutional blocks assembled by the right_convs method. Pass the layer_input to it.
+            conv_output = self.right_convs[j](concat)
+            #update layer_input, so that the output of the convolutional block will be inputed to the upsampling operation of the next (higher) level
             layer_input = conv_output
 
+        #output the result of the final convolutional block
         return self.final_conv(layer_input)
 
 
