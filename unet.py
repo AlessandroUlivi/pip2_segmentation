@@ -171,6 +171,7 @@ class OutputConv(torch.nn.Module):
         else:
             #if an activation function is indicatded, get it among the available in pytorch
             self.activation = getattr(torch.nn, activation)()
+            # self.activation = activation
 
     #define forward function, required for PyTorch to take advantage of the OutputConv class behind the scene
     def forward(self, x):
@@ -356,11 +357,11 @@ class UNet(torch.nn.Module):
         for i in range(self.depth - 1):  # -1 allows to leave out the bottom level
             #get the convolutional block corresponding at level i from the list of convolutional blocks assembled by the left_convs method. Pass the layer_input to it.
             conv_out = self.left_convs[i](layer_input)
-            #append the ouput to the collection list
+            # #append the ouput to the collection list
             convolution_outputs.append(conv_out)
-            #downsample the output of the convolutional block using the downsample object
+            # #downsample the output of the convolutional block using the downsample object
             downsampled = self.downsample(conv_out)
-            #update layer_input, so that the output of the downsampling will be inputed to the convolutional block of the next (lower) level
+            # #update layer_input, so that the output of the downsampling will be inputed to the convolutional block of the next (lower) level
             layer_input = downsampled
 
         # BOTTOM LEVEL
@@ -372,7 +373,7 @@ class UNet(torch.nn.Module):
         # RIGHT SIDE - ASCENDING/UPSAMPLING SIDE
         #iterate through the levels in an ascending order. Leave out the bottom level
         for j in range(0, self.depth-1)[::-1]:  # -1 allows to leave out the bottom level. The [::-1] inverts the order of the levels so that they are ascending
-            #use the upsample object to upsample the data (the layer_input)
+            # # use the upsample object to upsample the data (the layer_input)
             upsampled = self.upsample(layer_input)
             #concatenate the output of the descending convolutional block from the level j (collected in the list convolution_outputs) and the upsampled data result
             concat = self.crop_and_concat(convolution_outputs[j], upsampled)
