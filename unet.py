@@ -97,7 +97,8 @@ class Downsample(torch.nn.Module):
         applies downsample to a 3D tensor (x, CYX) and returns the result.
         Raises an error if the at least one of the YX dimensions is not dividable by self.downsample_factor (see above).
         """
-        if not self.check_valid(tuple(x.size()[-2:])): #only the last 2 dimensions matter, as the output of the convolutional block is 3D where channels are in position 1
+        dim_2_check = tuple(x.size()[-2:]) #only the last 2 dimensions matter, as the output of the convolutional block is 3D where channels are in position 1
+        if not self.check_valid(dim_2_check):
             raise RuntimeError(
                 "Can not downsample shape %s with factor %s"
                 % (x.size(), self.downsample_factor)
@@ -107,18 +108,38 @@ class Downsample(torch.nn.Module):
 
 
 class CropAndConcat(torch.nn.Module):
+    """
+    Implements the skip connections between downsampling (descending) half and upsampling (ascending) parts of the U-net.
+    """
     def crop(self, x, y):
-        """Center-crop x to match spatial dimensions given by y."""
+        """
+        Center-crop x to match spatial dimensions given by y.
+        x and y must have the same number of dimension. It is assumed that no dimension of y has size > than the corresponding dimension in x.
+        """
 
+        #get the desired output size by joining all the dimensions of x (input) before the last 2 (before YX)
+        #with the YX dimension (the last 2 dimensions of the size) of x (input)
         x_target_size = x.size()[:-2] + y.size()[-2:]
 
+        #per each dimension, get the how many pixels should be added/removed (offset) from x in order to match y.
+        #Note: the offset is divided by 2 because it will be added/removed from x to both sides of each dimension.
         offset = tuple((a - b) // 2 for a, b in zip(x.size(), x_target_size))
 
+        #create a tuple of "slice" objects, with one object per dimension of the inputs.
+        #each slice indicates the beginning and end (initial and final indeces) of the part of x which should be kept.
+        #NOTE Because each slice starts at the index 'offset' and ends at the index 'offset + size of y' the process effectively guarantees
+        #that the central part of x is maintened and matches y.
         slices = tuple(slice(o, o + s) for o, s in zip(offset, x_target_size))
 
         return x[slices]
 
+    #define forward function, required for PyTorch to take advantage of the Downsample class behind the scene
     def forward(self, encoder_output, upsample_output):
+        """
+        applies crop in order to crop the outer part of each dimension of the encoder_output so that it matches the
+        size of the corresponding dimension of the upsample_output.
+        Concatenates the cropped encoder_output and the upsample_ouput on the first dimension.
+        """
         encoder_cropped = self.crop(encoder_output, upsample_output)
 
         return torch.cat([encoder_cropped, upsample_output], dim=1)
@@ -231,6 +252,8 @@ class UNet(torch.nn.Module):
             )
         
         self.downsample = Downsample(self.downsample_factor)
+
+        #NOTE WELL! THE UPSAMPLING FUNCTION EXPECTS 4D INPUTS (MINIBATCH, CHANNEL, HEIGHT, WIDTH)...I'LL HAVE TO CHECK THAT THIS HAPPENS
         self.upsample = torch.nn.Upsample(
                     scale_factor=self.downsample_factor,
                     mode=self.upsample_mode,
