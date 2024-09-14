@@ -23,7 +23,7 @@ def train(
 
     Inputs:
     - model. The model to train. Must be derived from torch.nn.Module.
-    - loader. Train minibatch. A DataLoader object form torch.utils.data is expected. Refer to https://pytorch.org/tutorials/beginner/basics/data_tutorial.html
+    - loader. Train data organized in minibatches for the epoch (with inputs and labels). A DataLoader object form torch.utils.data is expected. Refer to https://pytorch.org/tutorials/beginner/basics/data_tutorial.html
     - optimizer. The optimizer of the training process. An object from PyTorch is expected. Refer to https://pytorch.org/docs/stable/optim.html
     - loss_function. The loss_function of the training processs. An object from PyTorch is expected. Refer to https://pytorch.org/docs/stable/nn.html#loss-functions
     - epoch. Int. The epoch number within the training process.
@@ -49,10 +49,20 @@ def train(
     # move model to device
     model = model.to(device)
 
+    #get the number of batches in the minibatch
+    n_batches = len(loader)
+
+    # # log the learning rate before the epoch
+    # lr = get_current_lr(optimizer)
+    # tb_logger.add_scalar(tag='learning-rate',
+    #                      scalar_value=lr,
+    #                      global_step=epoch * n_batches)
+
     # iterate over the batches of the epoch
     for batch_id, (x, y) in enumerate(loader):
         # move input and target to the active device (either cpu or gpu)
-        x, y = x.to(device), y.to(device)
+        x = x.to(device)
+        y = y.to(device)
 
         # zero the gradients for the iteration
         optimizer.zero_grad()
@@ -69,7 +79,7 @@ def train(
         loss.backward()
         optimizer.step()
 
-        # # log to console when batch_id is a multiple of log_interval
+        # # print training progression when batch_id is a multiple of log_interval
         # if batch_id % log_interval == 0:
         #     print(
         #         "Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}".format(
@@ -81,13 +91,13 @@ def train(
         #         )
         #     )
 
-        # # log to tensorboard
+        # # log to tensorboard if it is provided
         # if tb_logger is not None:
         #     step = epoch * len(loader) + batch_id
         #     tb_logger.add_scalar(
         #         tag="train_loss", scalar_value=loss.item(), global_step=step
         #     )
-        #     # check if we log images in this iteration
+        #     # check if we log images in this iteration (when step is a multiple of log_interval)
         #     if step % log_image_interval == 0:
         #         tb_logger.add_images(
         #             tag="input", img_tensor=x.to("cpu"), global_step=step
@@ -100,3 +110,4 @@ def train(
         #             img_tensor=prediction.to("cpu").detach(),
         #             global_step=step,
         #         )
+
