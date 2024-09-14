@@ -125,8 +125,6 @@ def normalize(image, target):
     image /= (chan_max + eps)
     #rescale target image to range 0 and 1
     rescaled_target = np.where(target>0, 1.0, 0.0).astype('float32')
-    print("image ", image.dtype)
-    print("target ", rescaled_target.dtype)
     return image, rescaled_target
 
 
