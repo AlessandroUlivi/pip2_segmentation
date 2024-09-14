@@ -31,6 +31,7 @@ def train(
     in order to track the progression of the training process.
     - log_image_interval. Int. Optional. Default 20. After how many batches the TensorBoard console is updated by saving the prediction results,
     in order to track the progression of the training process.
+    - tb_logger. TensorBoard logger. To keep track of progress. Refer to https://www.tensorflow.org/tensorboard?hl=it
     - device. Optional. None or device. Default None. The device to use for the training. If None, it will automatically checked if a cuda gpu is available.
     If available, it will be used. If not available, the cpu will be used.
 
@@ -67,12 +68,14 @@ def train(
         # zero the gradients for the iteration
         optimizer.zero_grad()
 
-        # apply model and calculate loss
+        # apply model and calculate the prediction
         prediction = model(x)
         # if prediction.shape != y.shape:
         #     y = crop(y, prediction)
         # if y.dtype != prediction.dtype:
         #     y = y.type(prediction.dtype)
+
+        #calculate the loss value
         loss = loss_function(prediction, y)
 
         # backpropagate the loss and adjust the parameters
