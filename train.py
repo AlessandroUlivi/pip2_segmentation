@@ -4,7 +4,7 @@
 # import math
 import torch
 import torch.nn as nn
-import numpy as np
+# import numpy as np
 # from utils import crop
 
 
@@ -53,11 +53,11 @@ def train(
     #get the number of batches in the minibatch
     n_batches = len(loader)
 
-    # # log the learning rate before the epoch
-    # lr = get_current_lr(optimizer)
-    # tb_logger.add_scalar(tag='learning-rate',
-    #                      scalar_value=lr,
-    #                      global_step=epoch * n_batches)
+    # # # log the learning rate before the epoch
+    # # lr = get_current_lr(optimizer)
+    # # tb_logger.add_scalar(tag='learning-rate',
+    # #                      scalar_value=lr,
+    # #                      global_step=epoch * n_batches)
 
     # iterate over the batches of the epoch
     for batch_id, (x, y) in enumerate(loader):
@@ -70,47 +70,49 @@ def train(
 
         # apply model and calculate the prediction
         prediction = model(x)
+
         # if prediction.shape != y.shape:
         #     y = crop(y, prediction)
         # if y.dtype != prediction.dtype:
         #     y = y.type(prediction.dtype)
 
         #calculate the loss value
-        loss = loss_function(prediction, y)
+        loss = loss_function(prediction[0,0,...], y[0,...])
 
         # backpropagate the loss and adjust the parameters
         loss.backward()
         optimizer.step()
+        print("---", batch_id)
 
-        # # print training progression when batch_id is a multiple of log_interval
-        # if batch_id % log_interval == 0:
-        #     print(
-        #         "Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}".format(
-        #             epoch,
-        #             batch_id * len(x),
-        #             len(loader.dataset),
-        #             100.0 * batch_id / len(loader),
-        #             loss.item(),
-        #         )
-        #     )
+    #     # # print training progression when batch_id is a multiple of log_interval
+    #     # if batch_id % log_interval == 0:
+    #     #     print(
+    #     #         "Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}".format(
+    #     #             epoch,
+    #     #             batch_id * len(x),
+    #     #             len(loader.dataset),
+    #     #             100.0 * batch_id / len(loader),
+    #     #             loss.item(),
+    #     #         )
+    #     #     )
 
-        # # log to tensorboard if it is provided
-        # if tb_logger is not None:
-        #     step = epoch * len(loader) + batch_id
-        #     tb_logger.add_scalar(
-        #         tag="train_loss", scalar_value=loss.item(), global_step=step
-        #     )
-        #     # check if we log images in this iteration (when step is a multiple of log_interval)
-        #     if step % log_image_interval == 0:
-        #         tb_logger.add_images(
-        #             tag="input", img_tensor=x.to("cpu"), global_step=step
-        #         )
-        #         tb_logger.add_images(
-        #             tag="target", img_tensor=y.to("cpu"), global_step=step
-        #         )
-        #         tb_logger.add_images(
-        #             tag="prediction",
-        #             img_tensor=prediction.to("cpu").detach(),
-        #             global_step=step,
-        #         )
+    #     # # log to tensorboard if it is provided
+    #     # if tb_logger is not None:
+    #     #     step = epoch * len(loader) + batch_id
+    #     #     tb_logger.add_scalar(
+    #     #         tag="train_loss", scalar_value=loss.item(), global_step=step
+    #     #     )
+    #     #     # check if we log images in this iteration (when step is a multiple of log_interval)
+    #     #     if step % log_image_interval == 0:
+    #     #         tb_logger.add_images(
+    #     #             tag="input", img_tensor=x.to("cpu"), global_step=step
+    #     #         )
+    #     #         tb_logger.add_images(
+    #     #             tag="target", img_tensor=y.to("cpu"), global_step=step
+    #     #         )
+    #     #         tb_logger.add_images(
+    #     #             tag="prediction",
+    #     #             img_tensor=prediction.to("cpu").detach(),
+    #     #             global_step=step,
+    #     #         )
 
