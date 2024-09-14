@@ -71,6 +71,9 @@ def train(
         # apply model and calculate the prediction
         prediction = model(x)
 
+        #THIS MUST BE IMPLEMENTED, BECAUSE IF PADDING IS NOT "same" THE SHAPE IS DIFFERENT
+        #THIS MUST BE IMPLEMENTED, BECAUSE IF PADDING IS NOT "same" THE SHAPE IS DIFFERENT
+        #THIS MUST BE IMPLEMENTED, BECAUSE IF PADDING IS NOT "same" THE SHAPE IS DIFFERENT
         # if prediction.shape != y.shape:
         #     y = crop(y, prediction)
         # if y.dtype != prediction.dtype:
