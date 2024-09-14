@@ -124,7 +124,9 @@ def normalize(image, target):
     #divide the image for the maximum value NOTE: add eps to maximum value to prevent a 0 division
     image /= (chan_max + eps)
     #rescale target image to range 0 and 1
-    rescaled_target = np.where(target>0, 1.0, 0.0)
+    rescaled_target = np.where(target>0, 1.0, 0.0).astype('float32')
+    print("image ", image.dtype)
+    print("target ", rescaled_target.dtype)
     return image, rescaled_target
 
 
@@ -140,7 +142,8 @@ def to_tensor(image, target):
     - position 1. target transformed to tensor
 
     """
-    return torch.from_numpy(image), torch.tensor([target], dtype=torch.int64)
+    return torch.from_numpy(image), torch.from_numpy(target)
+    # return torch.from_numpy(image), torch.tensor([target], dtype=torch.int64)
 
 
 def compose(image, target, transforms):
