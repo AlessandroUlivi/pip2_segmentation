@@ -59,3 +59,20 @@ def get_random_image_label_pair(images, labels):
 
     return images[random_indx, ...], labels[random_indx, ...]
 
+def crop_2d(x, y):
+        """
+        Center-crop x to match spatial dimensions given by y.
+        x and y are 2D tensors. It is assumed that no dimension of y has size > than the corresponding dimension in x.
+        """
+
+        #per each dimension, get the how many pixels should be added/removed (offset) from x in order to match y.
+        #Note: the offset is divided by 2 because it will be added/removed from x to both sides of each dimension.
+        offset = tuple((a - b) // 2 for a, b in zip(x.size(), y.size()))
+
+        #create a tuple of "slice" objects, with one object per dimension of the inputs.
+        #each slice indicates the beginning and end (initial and final indeces) of the part of x which should be kept.
+        #NOTE Because each slice starts at the index 'offset' and ends at the index 'offset + size of y' the process effectively guarantees
+        #that the central part of x is maintened and matches y.
+        slices = tuple(slice(o, o + s) for o, s in zip(offset, y.size()))
+
+        return x[slices]
