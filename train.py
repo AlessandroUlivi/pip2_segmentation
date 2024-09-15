@@ -65,6 +65,11 @@ def train(
         x = x.to(device)
         y = y.to(device)
 
+        #CHECK THAT x, y PIXEL PAIR IS CORRECT
+        #CHECK THAT x, y PIXEL PAIR IS CORRECT
+        #CHECK THAT x, y PIXEL PAIR IS CORRECT
+
+
         # zero the gradients for the iteration
         optimizer.zero_grad()
 
