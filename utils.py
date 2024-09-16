@@ -59,7 +59,7 @@ def get_random_image_label_pair(images, labels):
 
     return images[random_indx, ...], labels[random_indx, ...]
 
-def crop_2d(x, y):
+def crop_spatial_dimensions(x, y):
         """
         Center-crop x to match spatial dimensions given by y. Note: for spatial dimensions are meant the xy image dimension, which expected in positions
         -1 and -2. It is assumed that no dimension of y has size > than the corresponding dimension in x.
