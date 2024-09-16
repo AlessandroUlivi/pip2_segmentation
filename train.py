@@ -4,6 +4,7 @@
 # import math
 import torch
 import torch.nn as nn
+from utils import crop_spatial_dimensions
 # import numpy as np
 # from utils import crop
 
@@ -61,14 +62,10 @@ def train(
 
     # iterate over the batches of the epoch
     for batch_id, (x, y) in enumerate(loader):
+        
         # move input and target to the active device (either cpu or gpu)
         x = x.to(device)
         y = y.to(device)
-
-        #CHECK THAT x, y PIXEL PAIR IS CORRECT
-        #CHECK THAT x, y PIXEL PAIR IS CORRECT
-        #CHECK THAT x, y PIXEL PAIR IS CORRECT
-
 
         # zero the gradients for the iteration
         optimizer.zero_grad()
@@ -76,51 +73,49 @@ def train(
         # apply model and calculate the prediction
         prediction = model(x)
 
-        #THIS MUST BE IMPLEMENTED, BECAUSE IF PADDING IS NOT "same" THE SHAPE IS DIFFERENT
-        #THIS MUST BE IMPLEMENTED, BECAUSE IF PADDING IS NOT "same" THE SHAPE IS DIFFERENT
-        #THIS MUST BE IMPLEMENTED, BECAUSE IF PADDING IS NOT "same" THE SHAPE IS DIFFERENT
-        # if prediction.shape != y.shape:
-        #     y = crop(y, prediction)
+        #crop y when prediction mask is smaller than label (padding is "valid")
+        if prediction.shape != y.shape:
+            y = crop_spatial_dimensions(y, prediction)
         # if y.dtype != prediction.dtype:
         #     y = y.type(prediction.dtype)
-
+        
         #calculate the loss value
-        loss = loss_function(prediction[0,0,...], y[0,...])
+        loss = loss_function(prediction[0,0,...], y[0,...]) #NOTE: x and y number of dimension is different. This comes from the fact that the funcion add_channel in data_preparation.py add a chennel to x, but not to y
 
         # backpropagate the loss and adjust the parameters
         loss.backward()
         optimizer.step()
         print("---", batch_id)
 
-    #     # # print training progression when batch_id is a multiple of log_interval
-    #     # if batch_id % log_interval == 0:
-    #     #     print(
-    #     #         "Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}".format(
-    #     #             epoch,
-    #     #             batch_id * len(x),
-    #     #             len(loader.dataset),
-    #     #             100.0 * batch_id / len(loader),
-    #     #             loss.item(),
-    #     #         )
-    #     #     )
+    # #     # # print training progression when batch_id is a multiple of log_interval
+    # #     # if batch_id % log_interval == 0:
+    # #     #     print(
+    # #     #         "Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}".format(
+    # #     #             epoch,
+    # #     #             batch_id * len(x),
+    # #     #             len(loader.dataset),
+    # #     #             100.0 * batch_id / len(loader),
+    # #     #             loss.item(),
+    # #     #         )
+    # #     #     )
 
-    #     # # log to tensorboard if it is provided
-    #     # if tb_logger is not None:
-    #     #     step = epoch * len(loader) + batch_id
-    #     #     tb_logger.add_scalar(
-    #     #         tag="train_loss", scalar_value=loss.item(), global_step=step
-    #     #     )
-    #     #     # check if we log images in this iteration (when step is a multiple of log_interval)
-    #     #     if step % log_image_interval == 0:
-    #     #         tb_logger.add_images(
-    #     #             tag="input", img_tensor=x.to("cpu"), global_step=step
-    #     #         )
-    #     #         tb_logger.add_images(
-    #     #             tag="target", img_tensor=y.to("cpu"), global_step=step
-    #     #         )
-    #     #         tb_logger.add_images(
-    #     #             tag="prediction",
-    #     #             img_tensor=prediction.to("cpu").detach(),
-    #     #             global_step=step,
-    #     #         )
+    # #     # # log to tensorboard if it is provided
+    # #     # if tb_logger is not None:
+    # #     #     step = epoch * len(loader) + batch_id
+    # #     #     tb_logger.add_scalar(
+    # #     #         tag="train_loss", scalar_value=loss.item(), global_step=step
+    # #     #     )
+    # #     #     # check if we log images in this iteration (when step is a multiple of log_interval)
+    # #     #     if step % log_image_interval == 0:
+    # #     #         tb_logger.add_images(
+    # #     #             tag="input", img_tensor=x.to("cpu"), global_step=step
+    # #     #         )
+    # #     #         tb_logger.add_images(
+    # #     #             tag="target", img_tensor=y.to("cpu"), global_step=step
+    # #     #         )
+    # #     #         tb_logger.add_images(
+    # #     #             tag="prediction",
+    # #     #             img_tensor=prediction.to("cpu").detach(),
+    # #     #             global_step=step,
+    # #     #         )
 
