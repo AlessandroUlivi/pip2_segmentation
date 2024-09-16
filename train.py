@@ -76,8 +76,8 @@ def train(
         #crop y when prediction mask is smaller than label (padding is "valid")
         if prediction.shape != y.shape:
             y = crop_spatial_dimensions(y, prediction)
-        # if y.dtype != prediction.dtype:
-        #     y = y.type(prediction.dtype)
+        if y.dtype != prediction.dtype:
+            y = y.type(prediction.dtype)
         
         #calculate the loss value
         loss = loss_function(prediction[0,0,...], y[0,...]) #NOTE: x and y number of dimension is different. This comes from the fact that the funcion add_channel in data_preparation.py add a chennel to x, but not to y
