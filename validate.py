@@ -4,6 +4,7 @@
 # import math
 import torch
 import torch.nn as nn
+from utils import crop_spatial_dimensions
 # import numpy as np
 
 
@@ -58,43 +59,51 @@ def validate(
             # move input and target to the active device (either cpu or gpu)
             x = x.to(device)
             y = y.to(device)
-
+            print(x.shape)
+            print("initial y", y.shape)
             # apply model and calculate the prediction
             prediction = model(x)
+            print(prediction.shape)
+
+            #crop y when prediction mask is smaller than label (padding is "valid")
+            if prediction.shape != y.shape:
+                y = crop_spatial_dimensions(y, prediction)
             
-            # calculate the loss value and the metric value
-            loss_val = loss_function(prediction,y)
-            metric_val = metric(prediction,y)
+            print("final y", y.shape)
             
-            # add loss_val and metric_val to their cumulative respectives (cum_loss_val and cum_metric_val)
-            cum_loss_val += loss_val
-            cum_metric_val += metric_val
+    #         # calculate the loss value and the metric value
+    #         loss_val = loss_function(prediction,y)
+    #         metric_val = metric(prediction,y)
+            
+    #         # add loss_val and metric_val to their cumulative respectives (cum_loss_val and cum_metric_val)
+    #         cum_loss_val += loss_val
+    #         cum_metric_val += metric_val
 
-    # get the average loss value and metric
-    avg_loss_val = cum_loss_val / len(loader)
-    avg_metric_val = cum_metric_val / len(loader)
+    # # get the average loss value and metric
+    # avg_loss_val = cum_loss_val / len(loader)
+    # avg_metric_val = cum_metric_val / len(loader)
 
-    # # log the validation results if we have a tensorboard
-    # if tb_logger is not None:
-    #     assert (
-    #         step is not None
-    #     ), "Need to know the current step to log validation results"
-    #     tb_logger.add_scalar(tag="val_loss", scalar_value=avg_loss_val, global_step=step)
-    #     tb_logger.add_scalar(
-    #         tag="val_metric", scalar_value=avg_metric_val, global_step=step
-    #     )
-    #     # we always log the last validation images
-    #     tb_logger.add_images(tag="val_input", img_tensor=x.to("cpu"), global_step=step)
-    #     tb_logger.add_images(tag="val_target", img_tensor=y.to("cpu"), global_step=step)
-    #     tb_logger.add_images(
-    #         tag="val_prediction", img_tensor=prediction.to("cpu"), global_step=step
-    #     )
+    # # # log the validation results if we have a tensorboard
+    # # if tb_logger is not None:
+    # #     assert (
+    # #         step is not None
+    # #     ), "Need to know the current step to log validation results"
+    # #     tb_logger.add_scalar(tag="val_loss", scalar_value=avg_loss_val, global_step=step)
+    # #     tb_logger.add_scalar(
+    # #         tag="val_metric", scalar_value=avg_metric_val, global_step=step
+    # #     )
+    # #     # we always log the last validation images
+    # #     tb_logger.add_images(tag="val_input", img_tensor=x.to("cpu"), global_step=step)
+    # #     tb_logger.add_images(tag="val_target", img_tensor=y.to("cpu"), global_step=step)
+    # #     tb_logger.add_images(
+    # #         tag="val_prediction", img_tensor=prediction.to("cpu"), global_step=step
+    # #     )
 
-    # print(
-    #     "\nValidate: Average loss: {:.4f}, Average Metric: {:.4f}\n".format(
-    #         avg_loss_val, avg_metric_val
-    #     )
-    # )
+    # # print(
+    # #     "\nValidate: Average loss: {:.4f}, Average Metric: {:.4f}\n".format(
+    # #         avg_loss_val, avg_metric_val
+    # #     )
+    # # )
 
-    return avg_loss_val
+    # return avg_loss_val
 
