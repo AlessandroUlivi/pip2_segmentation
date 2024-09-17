@@ -100,11 +100,11 @@ def validate(
     # #         tag="val_prediction", img_tensor=prediction.to("cpu"), global_step=step
     # #     )
 
-    # # print(
-    # #     "\nValidate: Average loss: {:.4f}, Average Metric: {:.4f}\n".format(
-    # #         avg_loss_val, avg_metric_val
-    # #     )
-    # # )
+    print(
+        "\nValidate: Average loss: {:.4f}, Average Metric: {:.4f}\n".format(
+            avg_loss_val, avg_metric_val
+        )
+    )
 
     return avg_loss_val
 
