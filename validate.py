@@ -84,21 +84,21 @@ def validate(
     avg_loss_val = cum_loss_val / len(loader)
     avg_metric_val = cum_metric_val / len(loader)
 
-    # # # log the validation results if we have a tensorboard
-    # # if tb_logger is not None:
-    # #     assert (
-    # #         step is not None
-    # #     ), "Need to know the current step to log validation results"
-    # #     tb_logger.add_scalar(tag="val_loss", scalar_value=avg_loss_val, global_step=step)
-    # #     tb_logger.add_scalar(
-    # #         tag="val_metric", scalar_value=avg_metric_val, global_step=step
-    # #     )
-    # #     # we always log the last validation images
-    # #     tb_logger.add_images(tag="val_input", img_tensor=x.to("cpu"), global_step=step)
-    # #     tb_logger.add_images(tag="val_target", img_tensor=y.to("cpu"), global_step=step)
-    # #     tb_logger.add_images(
-    # #         tag="val_prediction", img_tensor=prediction.to("cpu"), global_step=step
-    # #     )
+    # log the validation results if we have a tensorboard
+    if tb_logger is not None:
+        assert (
+            step is not None
+        ), "Need to know the current step to log validation results"
+        tb_logger.add_scalar(tag="val_loss", scalar_value=avg_loss_val, global_step=step)
+        tb_logger.add_scalar(
+            tag="val_metric", scalar_value=avg_metric_val, global_step=step
+        )
+        # we always log the last validation images
+        tb_logger.add_images(tag="val_input", img_tensor=x.to("cpu"), global_step=step)
+        tb_logger.add_images(tag="val_target", img_tensor=y.to("cpu"), global_step=step)
+        tb_logger.add_images(
+            tag="val_prediction", img_tensor=prediction.to("cpu"), global_step=step
+        )
 
     print(
         "\nValidate: Average loss: {:.4f}, Average Metric: {:.4f}\n".format(
