@@ -13,6 +13,7 @@ def validate(
     loader,
     loss_function,
     metric,
+    bin_threshold=0.5,
     step=None,
     tb_logger=None,
     device=None):
@@ -26,6 +27,7 @@ def validate(
     - loader. Validation data organized in minibatches for the epoch (with inputs and labels). A DataLoader object form torch.utils.data is expected. Refer to https://pytorch.org/tutorials/beginner/basics/data_tutorial.html
     - loss_function. The loss_function of the training processs. An object from PyTorch is expected. Refer to https://pytorch.org/docs/stable/nn.html#loss-functions
     - metric. Function or class. The metric to use for evaluating the results.
+    - bin_threshold. Float. Optional. Default 0.5. The value to use as highpass threshold for binarizing the predicted image before calculating the metric.
     - log_image_interval. Int. Optional. Default 20. After how many batches the TensorBoard console is updated by saving the prediction results,
     in order to track the progression of the training process.
     - tb_logger. TensorBoard logger. To keep track of progress. Refer to https://www.tensorflow.org/tensorboard?hl=it
@@ -59,29 +61,28 @@ def validate(
             # move input and target to the active device (either cpu or gpu)
             x = x.to(device)
             y = y.to(device)
-            print(x.shape)
-            print("initial y", y.shape)
+
             # apply model and calculate the prediction
             prediction = model(x)
-            print(prediction.shape)
 
             #crop y when prediction mask is smaller than label (padding is "valid")
             if prediction.shape != y.shape:
                 y = crop_spatial_dimensions(y, prediction)
-            
-            print("final y", y.shape)
-            
-    #         # calculate the loss value and the metric value
-    #         loss_val = loss_function(prediction,y)
-    #         metric_val = metric(prediction,y)
-            
-    #         # add loss_val and metric_val to their cumulative respectives (cum_loss_val and cum_metric_val)
-    #         cum_loss_val += loss_val
-    #         cum_metric_val += metric_val
 
-    # # get the average loss value and metric
-    # avg_loss_val = cum_loss_val / len(loader)
-    # avg_metric_val = cum_metric_val / len(loader)
+            # calculate the loss value
+            loss_val = loss_function(prediction[0,0,...],y[0,...])
+
+            # calculate the metric value after binarizing the predictions
+            binary_prediction = torch.where(prediction>bin_threshold, 1,0)
+            metric_val = metric(binary_prediction[0,0,...],y[0,...])
+            
+            # add loss_val and metric_val to their cumulative respectives (cum_loss_val and cum_metric_val)
+            cum_loss_val += loss_val
+            cum_metric_val += metric_val
+
+    # get the average loss value and metric
+    avg_loss_val = cum_loss_val / len(loader)
+    avg_metric_val = cum_metric_val / len(loader)
 
     # # # log the validation results if we have a tensorboard
     # # if tb_logger is not None:
@@ -105,5 +106,5 @@ def validate(
     # #     )
     # # )
 
-    # return avg_loss_val
+    return avg_loss_val
 
