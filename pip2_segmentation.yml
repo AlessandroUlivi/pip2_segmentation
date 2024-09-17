@@ -7,7 +7,7 @@ dependencies:
   - python
   - jupyterlab
   - pip
-  - numpy
+  - numpy==1.26.4
   - matplotlib
   - pandas
   - scipy
