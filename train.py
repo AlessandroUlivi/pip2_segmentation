@@ -5,7 +5,7 @@
 import torch
 import torch.nn as nn
 from utils import crop_spatial_dimensions
-# import numpy as np
+import numpy as np
 
 
 def train(
@@ -85,6 +85,13 @@ def train(
         # backpropagate the loss and adjust the parameters
         loss.backward()
         optimizer.step()
+
+        # print("x max: ", np.amax(x.detach().numpy()[0,0,...]))
+        # print("x min: ", np.amin(x.detach().numpy()[0,0,...]))
+        # print("y max: ", np.amax(y.detach().numpy()[0,...]))
+        # print("y min: ", np.amin(y.detach().numpy()[0,...]))
+        # print("pred max: ", np.amax(prediction.detach().numpy()[0,0,...]))
+        # print("pred min: ", np.amin(prediction.detach().numpy()[0,0,...]))
 
         # print training progression when batch_id is a multiple of log_interval
         if batch_id % log_interval == 0:
