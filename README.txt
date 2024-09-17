@@ -4,7 +4,7 @@ Author: Alessandro Ulivi (ale.ulivi@gmail.com)
 
 Start date (yyyy/mm/dd): 2024/08/21
 
-Status: ongoing (2024/09/03)
+Status: ongoing (2024/09/17)
 
 Description: the goal of the project is to implement the segmentation of pip2-enriched domains in the C. elegans early embryo. The project was started by Alessandro Ulivi at IGBMC (Illkirch-Graffenstaden, France). Pip2-enriched domains are fluorescently labelled structures. The labelling is obtained by the transgenic expression of a mCherry fluorescent tag (refer to the C. elegans transgenic line ACR074). Images have been acquired using a Nikon CSU-X1 spinning disk microscope, a 100x, 1.4 NA, oil immersion objective. The pixel size is 0.11x0.11 um.
 
@@ -12,7 +12,7 @@ Dependencies: The pip2_segmentation.yml allows to create an environment with all
 - python 3.12.5
 - jupyterlab 4.2.5
 - pip 24.2
-- numpy 2.1.0
+- numpy 1.26.4 (required for compatibility with tensorboard)
 - matplotlib 3.9.2
 - pandas 2.2.2
 - scipy 1.14.1
