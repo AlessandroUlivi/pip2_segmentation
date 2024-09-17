@@ -85,19 +85,18 @@ def train(
         # backpropagate the loss and adjust the parameters
         loss.backward()
         optimizer.step()
-        print("---", batch_id)
 
-    # #     # # print training progression when batch_id is a multiple of log_interval
-    # #     # if batch_id % log_interval == 0:
-    # #     #     print(
-    # #     #         "Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}".format(
-    # #     #             epoch,
-    # #     #             batch_id * len(x),
-    # #     #             len(loader.dataset),
-    # #     #             100.0 * batch_id / len(loader),
-    # #     #             loss.item(),
-    # #     #         )
-    # #     #     )
+        # print training progression when batch_id is a multiple of log_interval
+        if batch_id % log_interval == 0:
+            print(
+                "Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}".format(
+                    epoch,
+                    batch_id * len(x),
+                    len(loader.dataset),
+                    100.0 * batch_id / len(loader),
+                    loss.item(),
+                )
+            )
 
     # #     # # log to tensorboard if it is provided
     # #     # if tb_logger is not None:
