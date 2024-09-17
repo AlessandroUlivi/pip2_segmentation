@@ -105,23 +105,23 @@ def train(
                 )
             )
 
-    # #     # # log to tensorboard if it is provided
-    # #     # if tb_logger is not None:
-    # #     #     step = epoch * len(loader) + batch_id
-    # #     #     tb_logger.add_scalar(
-    # #     #         tag="train_loss", scalar_value=loss.item(), global_step=step
-    # #     #     )
-    # #     #     # check if we log images in this iteration (when step is a multiple of log_interval)
-    # #     #     if step % log_image_interval == 0:
-    # #     #         tb_logger.add_images(
-    # #     #             tag="input", img_tensor=x.to("cpu"), global_step=step
-    # #     #         )
-    # #     #         tb_logger.add_images(
-    # #     #             tag="target", img_tensor=y.to("cpu"), global_step=step
-    # #     #         )
-    # #     #         tb_logger.add_images(
-    # #     #             tag="prediction",
-    # #     #             img_tensor=prediction.to("cpu").detach(),
-    # #     #             global_step=step,
-    # #     #         )
+        # log to tensorboard if it is provided
+        if tb_logger is not None:
+            step = epoch * len(loader) + batch_id
+            tb_logger.add_scalar(
+                tag="train_loss", scalar_value=loss.item(), global_step=step
+            )
+            # check if we log images in this iteration (when step is a multiple of log_interval)
+            if step % log_image_interval == 0:
+                tb_logger.add_images(
+                    tag="input", img_tensor=x.to("cpu"), global_step=step
+                )
+                tb_logger.add_images(
+                    tag="target", img_tensor=y.to("cpu"), global_step=step
+                )
+                tb_logger.add_images(
+                    tag="prediction",
+                    img_tensor=prediction.to("cpu").detach(),
+                    global_step=step,
+                )
 
