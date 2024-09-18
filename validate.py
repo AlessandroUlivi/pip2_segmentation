@@ -126,5 +126,5 @@ def validate(
         )
     )
 
-    return avg_loss_val, avg_metric
+    return avg_loss_val, avg_metric_val
 
