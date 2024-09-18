@@ -87,16 +87,18 @@ def add_channel(image, target, axis_to_use=0):
     
     Inputs:
     - image. np.array.
-    - target. anything.
+    - target. np.array.
+    - axis_to_use. Int. Optional. Defaul 0. The position in image.shape and target.shape where the extra dimension is added.
 
     Outputs: tuple.
     - position 0. np.array. Image with extra dimension of size 1 in position axis_to_use.
-    - position 1. target.
+    - position 1. target. Target with extra dimension of size 1 in position axis_to_use.
 
     """
     # put channel first
     image_w_c = np.expand_dims(image, axis=axis_to_use)
-    return image_w_c, target
+    target_w_c = np.expand_dims(image, axis=axis_to_use)
+    return image_w_c, target_w_c
 
 
 def normalize(image, target):
