@@ -97,7 +97,7 @@ def add_channel(image, target, axis_to_use=0):
     """
     # put channel first
     image_w_c = np.expand_dims(image, axis=axis_to_use)
-    target_w_c = np.expand_dims(image, axis=axis_to_use)
+    target_w_c = np.expand_dims(target, axis=axis_to_use)
     return image_w_c, target_w_c
 
 
