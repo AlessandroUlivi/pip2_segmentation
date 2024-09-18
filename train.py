@@ -83,56 +83,55 @@ def train(
         if y.dtype != prediction.dtype:
             y = y.type(prediction.dtype)
         
-        # #calculate the loss value
-        # loss = loss_function(prediction[0,0,...], y[0,...]) #NOTE: x and y number of dimension is different. This comes from the fact that the funcion add_channel in data_preparation.py add a chennel to x, but not to y
+        #calculate the loss value
+        loss = loss_function(prediction, y)
 
-        # # backpropagate the loss and adjust the parameters
-        # loss.backward()
-        # optimizer.step()
+        # backpropagate the loss and adjust the parameters
+        loss.backward()
+        optimizer.step()
 
-        print("x shape: ", x.size())
-        print("x dtype: ", x.dtype)
-        # print("x max: ", np.amax(x.detach().numpy()[0,0,...]))
-        # print("x min: ", np.amin(x.detach().numpy()[0,0,...]))
-        print("y shape: ", y.size())
-        print("y dtype: ", y.dtype)
-        # print("y max: ", np.amax(y.detach().numpy()[0,...]))
-        # print("y min: ", np.amin(y.detach().numpy()[0,...]))
-        print("pred shape: ", prediction.size())
-        print("pred dtype: ", prediction.dtype)
-        # print("pred max: ", np.amax(prediction.detach().numpy()[0,0,...]))
-        # print("pred min: ", np.amin(prediction.detach().numpy()[0,0,...]))
+        # print("x shape: ", x.size())
+        # print("x dtype: ", x.dtype)
+        # print("x max: ", np.amax(x.detach().numpy()))
+        # print("x min: ", np.amin(x.detach().numpy()))
+        # print("y shape: ", y.size())
+        # print("y dtype: ", y.dtype)
+        # print("y max: ", np.amax(y.detach().numpy()))
+        # print("y min: ", np.amin(y.detach().numpy()))
+        # print("pred shape: ", prediction.size())
+        # print("pred dtype: ", prediction.dtype)
+        # print("pred max: ", np.amax(prediction.detach().numpy()))
+        # print("pred min: ", np.amin(prediction.detach().numpy()))
 
         # print training progression when batch_id is a multiple of log_interval
         if batch_id % log_interval == 0:
-            print("===", batch_id)
-            # print(
-            #     "Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}".format(
-            #         epoch,
-            #         batch_id * len(x),
-            #         len(loader.dataset),
-            #         100.0 * batch_id / len(loader),
-            #         loss.item(),
-            #     )
-            # )
+            print(
+                "Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}".format(
+                    epoch,
+                    batch_id * len(x),
+                    len(loader.dataset),
+                    100.0 * batch_id / len(loader),
+                    loss.item(),
+                )
+            )
 
-        # # log to tensorboard if it is provided
-        # if tb_logger is not None:
-        #     step = epoch * len(loader) + batch_id
-        #     tb_logger.add_scalar(
-        #         tag="train_loss", scalar_value=loss.item(), global_step=step
-        #     )
-        #     # check if we log images in this iteration (when step is a multiple of log_interval)
-        #     if step % log_image_interval == 0:
-        #         tb_logger.add_images(
-        #             tag="input", img_tensor=x.to("cpu"), global_step=step
-        #         )
-        #         tb_logger.add_images(
-        #             tag="target", img_tensor=y.to("cpu"), global_step=step
-        #         )
-        #         tb_logger.add_images(
-        #             tag="prediction",
-        #             img_tensor=prediction.to("cpu").detach(),
-        #             global_step=step,
-        #         )
+        # log to tensorboard if it is provided
+        if tb_logger is not None:
+            step = epoch * len(loader) + batch_id
+            tb_logger.add_scalar(
+                tag="train_loss", scalar_value=loss.item(), global_step=step
+            )
+            # check if we log images in this iteration (when step is a multiple of log_interval)
+            if step % log_image_interval == 0:
+                tb_logger.add_images(
+                    tag="input", img_tensor=x.to("cpu"), global_step=step
+                )
+                tb_logger.add_images(
+                    tag="target", img_tensor=y.to("cpu"), global_step=step
+                )
+                tb_logger.add_images(
+                    tag="prediction",
+                    img_tensor=prediction.to("cpu").detach(),
+                    global_step=step,
+                )
 
