@@ -199,9 +199,9 @@ def run_training(model,
     # initialize the best_metric parameter - it will be used for saving checkpoints
     best_metric = best_metric_init
 
-    # #initialize the learning scheduler, if specified
-    # if lr_scheduler_flag:
-    #     lr_scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, **lr_kwargs)
+    #initialize the learning scheduler, if specified
+    if lr_scheduler_flag:
+        lr_scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, **lr_kwargs)
 
     # train for n_epochs. During the training inspect the predictions
     for epoch in range(n_epochs):
@@ -234,10 +234,10 @@ def run_training(model,
                                                 x_dim=x_dim,
                                                 y_dim=y_dim)
 
-        # if lr_scheduler_flag:
-        #     lr_scheduler.step(current_loss)
-        #     logger.add_scalar(tag="lr", scalar_value=lr_scheduler.get_last_lr()[0], global_step=step
-        #     )
+        if lr_scheduler_flag:
+            lr_scheduler.step(current_loss)
+            logger.add_scalar(tag="lr", scalar_value=lr_scheduler.get_last_lr()[0], global_step=step
+            )
         
         # #save checkpoint if a path is specified and the metric is the best
         # if len(path)>0 and current_metric>best_metric:
