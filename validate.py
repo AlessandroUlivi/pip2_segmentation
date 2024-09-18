@@ -37,7 +37,7 @@ def validate(
     If available, it will be used. If not available, the cpu will be used.
     - x_dim. List of int. Optional. Default [-2, -1]. The position of Y and X axes in x input image. The parameter is passed to the x_dim input in crop_spatial_dimensions.
     - y_dim. List of int. Optional. Default [-2, -1]. The position of Y and X axes in y input image. The parameter is passed to the y_dim input in crop_spatial_dimensions.
-    
+
     Outputs: float. The average loss value for the validation data.
     """
 
@@ -53,6 +53,9 @@ def validate(
 
     # move model to device
     model.to(device)
+
+    # move loss function to device
+    loss_function.to(device)
 
     # initialize loss and metric values - they are used to obtain the cumulative sum of the loss values and metric values of the data in the loader
     cum_loss_val = 0
