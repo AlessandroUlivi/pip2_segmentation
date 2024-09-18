@@ -168,5 +168,3 @@ cython_debug/
 #Tensorboard runs
 /runs
 
-#Model checkpoints
-/checkpoints
