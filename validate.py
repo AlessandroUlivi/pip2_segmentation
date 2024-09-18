@@ -5,7 +5,7 @@
 import torch
 import torch.nn as nn
 from utils import crop_spatial_dimensions
-# import numpy as np
+import numpy as np
 
 
 def validate(
@@ -69,12 +69,25 @@ def validate(
             if prediction.shape != y.shape:
                 y = crop_spatial_dimensions(y, prediction)
 
+            # print("x shape: ", x.size())
+            # print("x dtype: ", x.dtype)
+            # print("x max: ", np.amax(x.detach().numpy()))
+            # print("x min: ", np.amin(x.detach().numpy()))
+            # print("y shape: ", y.size())
+            # print("y dtype: ", y.dtype)
+            # print("y max: ", np.amax(y.detach().numpy()))
+            # print("y min: ", np.amin(y.detach().numpy()))
+            # print("pred shape: ", prediction.size())
+            # print("pred dtype: ", prediction.dtype)
+            # print("pred max: ", np.amax(prediction.detach().numpy()))
+            # print("pred min: ", np.amin(prediction.detach().numpy()))
+
             # calculate the loss value
-            loss_val = loss_function(prediction[0,0,...],y[0,...])
+            loss_val = loss_function(prediction,y)
 
             # calculate the metric value after binarizing the predictions
             binary_prediction = torch.where(prediction>bin_threshold, 1,0)
-            metric_val = metric(binary_prediction[0,0,...],y[0,...])
+            metric_val = metric(binary_prediction,y)
             
             # add loss_val and metric_val to their cumulative respectives (cum_loss_val and cum_metric_val)
             cum_loss_val += loss_val
