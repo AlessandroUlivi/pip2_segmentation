@@ -82,3 +82,42 @@ def crop_spatial_dimensions(x, y, x_dim=[-2,-1], y_dim=[-2,-1]):
 
         return x[slices]
 
+
+def get_current_lr(optimizer):
+    """
+    returns one of the valid learning rates during model training.
+
+    Inputs:
+    - optimizer. Training optimizer. A pytorch object is expected. Refer to torch.optim documentation.
+
+    Outputs: float. Among the valide learning rates, the one in position 0.
+    """
+    lrs = [param_group.get('lr', None) for param_group in optimizer.param_groups]
+    lrs = [lr for lr in lrs if lr is not None]
+    # return
+    return lrs[0]
+
+
+# def save_checkpoint(model, optimizer, n_epoch, path, key="checkpoint"):
+#     save_path = os.path.join(path, f"{key}.pt")
+#     torch.save(
+#         {
+#             "model":model.state_dict(),
+#             "optimizer":optimizer.state_dict(),
+#             "epoch": n_epoch
+#         },
+#         save_path
+#     )
+
+
+# def load_checkpoint(model, path, optimizer=None, key="checkpoint"):
+#     load_path = os.path.join(path, f"{key}.pt")
+#     checkpoint=torch.load(load_path)
+#     model.load_state_dict(checkpoint["model"])
+
+#     if optimizer:
+#         optimizer.load_state_dict(checkpoint["optimizer"])
+#         epoch=checkpoint["epoch"]
+#         return model, optimizer, epoch
+    
+#     return model
