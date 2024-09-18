@@ -17,7 +17,9 @@ def train(
     log_interval=100,
     log_image_interval=20,
     tb_logger=None,
-    device=None):
+    device=None,
+    x_dim=[-2,-1],
+    y_dim=[-2,-1]):
     """
     train the model for 1 epoch. Exploits TensorBoard to keep track of the training progress (variation of the loss function).
 
@@ -34,6 +36,8 @@ def train(
     - tb_logger. TensorBoard logger. To keep track of progress. Refer to https://www.tensorflow.org/tensorboard?hl=it
     - device. Optional. None or device. Default None. The device to use for the training. If None, it will automatically checked if a cuda gpu is available.
     If available, it will be used. If not available, the cpu will be used.
+    - x_dim. List of int. Optional. Default [-2, -1]. The position of Y and X axes in x input image. The parameter is passed to the x_dim input in crop_spatial_dimensions.
+    - y_dim. List of int. Optional. Default [-2, -1]. The position of Y and X axes in y input image. The parameter is passed to the y_dim input in crop_spatial_dimensions.
 
     The function has no output.
     """
@@ -75,53 +79,60 @@ def train(
 
         #crop y when prediction mask is smaller than label (padding is "valid")
         if prediction.shape != y.shape:
-            y = crop_spatial_dimensions(y, prediction)
+            y = crop_spatial_dimensions(y, prediction, x_dim=x_dim, y_dim=y_dim)
         if y.dtype != prediction.dtype:
             y = y.type(prediction.dtype)
         
-        #calculate the loss value
-        loss = loss_function(prediction[0,0,...], y[0,...]) #NOTE: x and y number of dimension is different. This comes from the fact that the funcion add_channel in data_preparation.py add a chennel to x, but not to y
+        # #calculate the loss value
+        # loss = loss_function(prediction[0,0,...], y[0,...]) #NOTE: x and y number of dimension is different. This comes from the fact that the funcion add_channel in data_preparation.py add a chennel to x, but not to y
 
-        # backpropagate the loss and adjust the parameters
-        loss.backward()
-        optimizer.step()
+        # # backpropagate the loss and adjust the parameters
+        # loss.backward()
+        # optimizer.step()
 
+        print("x shape: ", x.size())
+        print("x dtype: ", x.dtype)
         # print("x max: ", np.amax(x.detach().numpy()[0,0,...]))
         # print("x min: ", np.amin(x.detach().numpy()[0,0,...]))
+        print("y shape: ", y.size())
+        print("y dtype: ", y.dtype)
         # print("y max: ", np.amax(y.detach().numpy()[0,...]))
         # print("y min: ", np.amin(y.detach().numpy()[0,...]))
+        print("pred shape: ", prediction.size())
+        print("pred dtype: ", prediction.dtype)
         # print("pred max: ", np.amax(prediction.detach().numpy()[0,0,...]))
         # print("pred min: ", np.amin(prediction.detach().numpy()[0,0,...]))
 
         # print training progression when batch_id is a multiple of log_interval
         if batch_id % log_interval == 0:
-            print(
-                "Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}".format(
-                    epoch,
-                    batch_id * len(x),
-                    len(loader.dataset),
-                    100.0 * batch_id / len(loader),
-                    loss.item(),
-                )
-            )
+            print("===", batch_id)
+            # print(
+            #     "Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}".format(
+            #         epoch,
+            #         batch_id * len(x),
+            #         len(loader.dataset),
+            #         100.0 * batch_id / len(loader),
+            #         loss.item(),
+            #     )
+            # )
 
-        # log to tensorboard if it is provided
-        if tb_logger is not None:
-            step = epoch * len(loader) + batch_id
-            tb_logger.add_scalar(
-                tag="train_loss", scalar_value=loss.item(), global_step=step
-            )
-            # check if we log images in this iteration (when step is a multiple of log_interval)
-            if step % log_image_interval == 0:
-                tb_logger.add_images(
-                    tag="input", img_tensor=x.to("cpu"), global_step=step
-                )
-                tb_logger.add_images(
-                    tag="target", img_tensor=y.to("cpu"), global_step=step
-                )
-                tb_logger.add_images(
-                    tag="prediction",
-                    img_tensor=prediction.to("cpu").detach(),
-                    global_step=step,
-                )
+        # # log to tensorboard if it is provided
+        # if tb_logger is not None:
+        #     step = epoch * len(loader) + batch_id
+        #     tb_logger.add_scalar(
+        #         tag="train_loss", scalar_value=loss.item(), global_step=step
+        #     )
+        #     # check if we log images in this iteration (when step is a multiple of log_interval)
+        #     if step % log_image_interval == 0:
+        #         tb_logger.add_images(
+        #             tag="input", img_tensor=x.to("cpu"), global_step=step
+        #         )
+        #         tb_logger.add_images(
+        #             tag="target", img_tensor=y.to("cpu"), global_step=step
+        #         )
+        #         tb_logger.add_images(
+        #             tag="prediction",
+        #             img_tensor=prediction.to("cpu").detach(),
+        #             global_step=step,
+        #         )
 
