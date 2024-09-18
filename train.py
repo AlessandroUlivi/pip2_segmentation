@@ -54,7 +54,7 @@ def train(
     model.train()
 
     # move model to device
-    model = model.to(device)
+    model.to(device)
 
     # move loss function to device
     loss_function.to(device)
