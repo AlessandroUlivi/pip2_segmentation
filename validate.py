@@ -126,5 +126,5 @@ def validate(
         )
     )
 
-    return avg_loss_val
+    return avg_loss_val, prediction
 
