@@ -5,7 +5,7 @@
 import torch
 import torch.nn as nn
 import numpy as np
-from utils import crop_spatial_dimensions
+from utils import crop_spatial_dimensions, get_current_lr
 from validate import validate
 import torch.optim as optim
 
@@ -62,12 +62,12 @@ def train(
     #get the number of batches in the minibatch
     n_batches = len(loader)
 
-    # # log the learning rate before the epoch
-    # if tb_logger is not None:
-    #     lr = get_current_lr(optimizer)
-    #     tb_logger.add_scalar(tag='learning-rate',
-    #                         scalar_value=lr,
-    #                         global_step=epoch * n_batches)
+    # log the learning rate before the epoch
+    if tb_logger is not None:
+        lr = get_current_lr(optimizer)
+        tb_logger.add_scalar(tag='learning-rate',
+                            scalar_value=lr,
+                            global_step=epoch * n_batches)
 
     # iterate over the batches of the epoch
     for batch_id, (x, y) in enumerate(loader):
