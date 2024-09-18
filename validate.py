@@ -16,7 +16,9 @@ def validate(
     bin_threshold=0.5,
     step=None,
     tb_logger=None,
-    device=None):
+    device=None,
+    x_dim=[-1,-2],
+    y_dim=[-1,-2]):
 
     """
     validate the model on one epoch. The function is meant to run on the validation dataset during the model training.
@@ -33,7 +35,9 @@ def validate(
     - tb_logger. TensorBoard logger. To keep track of progress. Refer to https://www.tensorflow.org/tensorboard?hl=it
     - device. Optional. None or device. Default None. The device to use for the validation. If None, it will automatically checked if a cuda gpu is available.
     If available, it will be used. If not available, the cpu will be used.
-
+    - x_dim. List of int. Optional. Default [-2, -1]. The position of Y and X axes in x input image. The parameter is passed to the x_dim input in crop_spatial_dimensions.
+    - y_dim. List of int. Optional. Default [-2, -1]. The position of Y and X axes in y input image. The parameter is passed to the y_dim input in crop_spatial_dimensions.
+    
     Outputs: float. The average loss value for the validation data.
     """
 
@@ -67,7 +71,7 @@ def validate(
 
             #crop y when prediction mask is smaller than label (padding is "valid")
             if prediction.shape != y.shape:
-                y = crop_spatial_dimensions(y, prediction)
+                y = crop_spatial_dimensions(y, prediction, x_dim=x_dim, y_dim=y_dim)
 
             # print("x shape: ", x.size())
             # print("x dtype: ", x.dtype)
