@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import random
+import torch
 
 
 def listdirNHF(input_directory):
@@ -94,30 +95,62 @@ def get_current_lr(optimizer):
     """
     lrs = [param_group.get('lr', None) for param_group in optimizer.param_groups]
     lrs = [lr for lr in lrs if lr is not None]
-    # return
     return lrs[0]
 
 
-# def save_checkpoint(model, optimizer, n_epoch, path, key="checkpoint"):
-#     save_path = os.path.join(path, f"{key}.pt")
-#     torch.save(
-#         {
-#             "model":model.state_dict(),
-#             "optimizer":optimizer.state_dict(),
-#             "epoch": n_epoch
-#         },
-#         save_path
-#     )
+def save_checkpoint(model, optimizer, n_epoch, path, key="checkpoint"):
+    """
+    save checkpoints when training model
+
+    Inputs:
+    - model. Training model. Must be derived from torch.nn.Module.
+    - optimizer. The optimizer of the training process. An object from PyTorch is expected. Refer to https://pytorch.org/docs/stable/optim.html.
+    - n_epoch. Int. The training epoch.
+    - path. String. The directory of the folder where checkpoints will be saved.
+    - key. String. Optional. Default "checkpoint". The name of the checkpoint saved file.
+
+    The function does not have outputs, but checkpoints of trained model are saved in the path directory. Checkpoints are saved as
+    .pt objects, refer to torch.save documentation https://pytorch.org/docs/stable/generated/torch.save.html.
+    """
+    save_path = os.path.join(path, f"{key}.pt")
+    torch.save(
+        {
+            "model":model.state_dict(),
+            "optimizer":optimizer.state_dict(),
+            "epoch": n_epoch
+        },
+        save_path
+    )
 
 
-# def load_checkpoint(model, path, optimizer=None, key="checkpoint"):
-#     load_path = os.path.join(path, f"{key}.pt")
-#     checkpoint=torch.load(load_path)
-#     model.load_state_dict(checkpoint["model"])
+def load_checkpoint(model, path, optimizer=None, key="checkpoint"):
+    """
+    loads a saved checkpoint of a pytorch model. NOTE: it is expected that the checkpoint has extension .pt () and has been saved using the torch.save function.
+    Refer to the documentation https://pytorch.org/docs/stable/generated/torch.save.html.
 
-#     if optimizer:
-#         optimizer.load_state_dict(checkpoint["optimizer"])
-#         epoch=checkpoint["epoch"]
-#         return model, optimizer, epoch
+    Inputs:
+    - model. The model whose checkpoint has been saved. Must be derived from torch.nn.Module.
+    - path. String. The directory of the folder where the checkpoint has been saved. NOTE: the folder can contain other files in addition to the checkpoin. The
+    only file which will be opened is the file whose name corresponds to the "key" input.
+    - key. String. Optional. Default "checkpoint". The name of the checkpoint saved file. NOTE: this is the name without extension. Thus, the full name is expected
+    be key.pt
+    - optimizer. Optional. Default None. The optimizer of the model whose checkpoints have been saved. An object from PyTorch is expected. Refer to https://pytorch.org/docs/stable/optim.html.
+
+    Outputs:
+    if optimizer==None. The model whose checkpoint has been saved.
+
+    If optimizer!=None. The output is a tuple with:
+    - position 0.  The model whose checkpoint has been saved.
+    - position 1. The optimizer of the training process.
+    - position 2. The epoch of the saved checkpoint.
+    """
+    load_path = os.path.join(path, f"{key}.pt")
+    checkpoint=torch.load(load_path)
+    model.load_state_dict(checkpoint["model"])
+
+    if optimizer:
+        optimizer.load_state_dict(checkpoint["optimizer"])
+        epoch=checkpoint["epoch"]
+        return model, optimizer, epoch
     
-#     return model
+    return model
