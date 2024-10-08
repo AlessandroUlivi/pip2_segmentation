@@ -13,7 +13,7 @@ def listdirNHF(input_directory):
     return [f for f in os.listdir(input_directory) if not f.startswith(".")]
 
 
-def check_files_else_make_folders(folder_dir_to_create):
+def check_folder_files_else_make_folder(folder_dir_to_create):
     """
     Check if a folder is present and if it contains any object. If the folder is not present, it creates it.
     inputs:
