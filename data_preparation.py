@@ -2,6 +2,7 @@
 
 import os
 from functools import partial
+import random
 import numpy as np
 import torch
 from torch.utils.data import Dataset
@@ -281,20 +282,31 @@ def make_dataset(input_data_dir, labels_data_dir, transform=None, shuffle_data=T
     Applies tranformations, if required.
 
     Inputs:
-    - input_data_dir; the directory of the input data. It is expected that only the files to be used as input data are found in the directory. Input data must
+    - input_data_dir. The directory of the input data. It is expected that only the files to be used as input data are found in the directory. Input data must
     have the same shape.
-    - labels_data_dir; the directory of labels data. It is expected that only the files to be used as input data are found in the directory. The names of the labels
+    - labels_data_dir. The directory of labels data. It is expected that only the files to be used as input data are found in the directory. The names of the labels
     data is expected to match the name of the corresponding input data.
     - transform. None or iterable. Default None. If None, minimal data transformations to have data prepared for PyTorch, will be applied
     (see get_default_transform). If iterable, a list-like object must be passed, containing the funtions to apply. Functions will be applied,
     sequentially from position 0 to position -1.
-    - shuffle_data.
+    - shuffle_data. Bool. Optional. Default True. Whether or not to shuffle the order of the data after their loading.
     - stack_axis. Optional. Defauls 0. The axis along which data are stacked in the output arrays.
 
     Outputs: Dataset class from DatasetWithTransform(Dataset) for the input_data and corresponding labels.
     """
     #load input data and corresponding labels
     images, labels = load_dataset(input_data_dir, labels_data_dir, stack_axis=stack_axis)
+
+    #implement shuffling of the data, if shuffle_data=True
+    if shuffle_data:
+        #generate a random order of the indexes of the images
+        random_index_shuffle = random.sample(range(images.shape[stack_axis]), k=images.shape[stack_axis])
+
+        #reorder images according to the random order
+        images = images[np.asarray(random_index_shuffle), ...]
+
+        #reorder the labels according the same random order
+        labels = labels[np.asarray(random_index_shuffle), ...]
 
     #get default the minimum transformations to apply to the dataset if tranforms is set to None
     if transform is None:
