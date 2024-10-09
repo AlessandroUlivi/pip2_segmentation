@@ -85,28 +85,46 @@ def chunk_center(image, chunk_y=256, chunk_x=256):
     assert (y_chunks_n*chunk_y)+top_y_padding+bot_y_padding==image.shape[0], "the pixels splitting did not work on the y axis"
     assert (x_chunks_n*chunk_x)+left_x_padding+right_x_padding==image.shape[1], "the pixels splitting did not work on the x axis"
 
+    #initialize a collection list for the chunks, to be used to form the output array
+    chunk_collection_list = []
+
+    #intialize a collection list for the coordinated of the top-left pixels of each chunk, to be used for the output tuple
+    coords_collection_list = []
+
     #initialize the starting position of the highest chunk on the y axis
     y_start = top_y_padding
 
     #iterate through the number of chunks which could be fit on the y axis
-    for y in range(y_chunks_n-1):
+    for y in range(y_chunks_n):
 
         #initialize the starting position of the chunk on the far left on the x axis
         x_start = left_x_padding
 
         #iterate through the number of chunks which could be fit on the x axis
-        for x in range(x_chunks_n-1):
+        for x in range(x_chunks_n):
 
             #slice image to obtain the chunck
             chunk = image[y_start:y_start+chunk_y, x_start:x_start+chunk_x]
-            print(chunk.shape)
+            
+            #add the chunk to the collection list
+            chunk_collection_list.append(chunk)
+
+            #add the coordinates to the collection list
+            coords_collection_list.append((y_start,x_start))
 
             #update x_start, so that the following chunk will start from the end of the previous
             x_start = x_start+chunk_x
         
         #update y_start, so that the following chunk will start from the end of the previous
         y_start = y_start+chunk_y
-        
+    
+    #transform chunk collection list in an array
+    chunk_collection_array = np.stack(chunk_collection_list, axis=0)
+
+    #transform coordinates collection list in a tuple
+    coords_collection_tuple = tuple(coords_collection_list)
+    
+    return chunk_collection_array, coords_collection_tuple
 
 
 
