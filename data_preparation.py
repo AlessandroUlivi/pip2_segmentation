@@ -51,33 +51,33 @@ def load_dataset(input_data_dir, labels_data_dir, stack_axis=0):
     return images, labels
 
 
-def make_dataset_train_val_split(images, labels, validation_fraction=0.20, shuffle_data=True):
-    """
-    splits inputs data and matching labels into train and validation sub-sets.
+# def make_dataset_train_val_split(images, labels, validation_fraction=0.20, shuffle_data=True):
+#     """
+#     splits inputs data and matching labels into train and validation sub-sets.
 
-    Inputs:
-    - images. np.array.
-    - labels. np.array. The size of labels axis 0 (shape[0]) must match the size of images axis 0 (shape[0]).
-    - validation_fraction. float. Optional. Defauls 0.2. The fraction of data to use as validation dataset.
-    - shuffle_data. Bool. Optional. Defaul True. Whether or not to shuffle data before splitting.
+#     Inputs:
+#     - images. np.array.
+#     - labels. np.array. The size of labels axis 0 (shape[0]) must match the size of images axis 0 (shape[0]).
+#     - validation_fraction. float. Optional. Defauls 0.2. The fraction of data to use as validation dataset.
+#     - shuffle_data. Bool. Optional. Defaul True. Whether or not to shuffle data before splitting.
 
-    Outputs: tuple.
-    - position 0. np.array. Sub-array of images along axis 0. The size of axis 0 corresponds to 1-validation_fraction of the original axis 0 size.
-    - position 1. np.array. Sub-array of images along axis 0. The size of axis 0 corresponds to validation_fraction of the original axis 0 size.
-    - position 2. np.array. Sub-array of labels along axis 0. The size of axis 0 corresponds to 1-validation_fraction of the original axis 0 size.
-    - position 3. np.array. Sub-array of labels along axis 0. The size of axis 0 corresponds to validation_fraction of the original axis 0 size.
+#     Outputs: tuple.
+#     - position 0. np.array. Sub-array of images along axis 0. The size of axis 0 corresponds to 1-validation_fraction of the original axis 0 size.
+#     - position 1. np.array. Sub-array of images along axis 0. The size of axis 0 corresponds to validation_fraction of the original axis 0 size.
+#     - position 2. np.array. Sub-array of labels along axis 0. The size of axis 0 corresponds to 1-validation_fraction of the original axis 0 size.
+#     - position 3. np.array. Sub-array of labels along axis 0. The size of axis 0 corresponds to validation_fraction of the original axis 0 size.
 
-    """
-    #splits images and labels in train and validation datasets
-    (train_images, val_images,
-     train_labels, val_labels) = train_test_split(images, labels, shuffle=shuffle_data,
-                                                  test_size=validation_fraction)
-    #check that the splitting was correctly done
-    assert len(train_images) == len(train_labels)
-    assert len(val_images) == len(val_labels)
-    assert len(train_images) + len(val_images) == len(images)
+#     """
+#     #splits images and labels in train and validation datasets
+#     (train_images, val_images,
+#      train_labels, val_labels) = train_test_split(images, labels, shuffle=shuffle_data,
+#                                                   test_size=validation_fraction)
+#     #check that the splitting was correctly done
+#     assert len(train_images) == len(train_labels)
+#     assert len(val_images) == len(val_labels)
+#     assert len(train_images) + len(val_images) == len(images)
 
-    return train_images, train_labels, val_images, val_labels
+#     return train_images, train_labels, val_images, val_labels
 
 
 def add_channel(image, target, axis_to_use=0):
@@ -208,47 +208,77 @@ def get_default_transform():
     return trafos
 
 
-def make_train_datasets(input_data_dir, labels_data_dir, transform=None, validation_fraction=0.20, stack_axis=0, shuffle_data=True):
-    """
-    Loads the train dataset. Splits train and validation sub-datasets. Applies tranformations, if required.
+# def make_train_datasets(input_data_dir, labels_data_dir, transform=None, validation_fraction=0.20, stack_axis=0, shuffle_data=True):
+#     """
+#     Loads the train dataset. Splits train and validation sub-datasets. Applies tranformations, if required.
 
-    Inputs:
-    - input_data_dir; the directory of the input data. It is expected that only the files to be used as input data are found in the directory. Input data must
-    have the same shape.
-    - labels_data_dir; the directory of labels data. It is expected that only the files to be used as input data are found in the directory. The names of the labels
-    data is expected to match the name of the corresponding input data.
-    - transform. None or iterable. Default None. If None, minimal data transformations to have data prepared for PyTorch, will be applied
-    (see get_default_transform). If iterable, a list-like object must be passed, containing the funtions to apply. Functions will be applied,
-    sequentially from position 0 to position -1. Note that if different than None, the minimal data transformations (see get_default_transform) will be ignored.
-    - validation_fraction. float. Optional. Defauls 0.2. The fraction of data to use as validation dataset.
-    - stack_axis. Optional. Defauls 0. The axis along which data are stacked in the output arrays.
-    - shuffle_data. Bool. Optional. Defaul True. Whether or not to shuffle data before splitting.
+#     Inputs:
+#     - input_data_dir; the directory of the input data. It is expected that only the files to be used as input data are found in the directory. Input data must
+#     have the same shape.
+#     - labels_data_dir; the directory of labels data. It is expected that only the files to be used as input data are found in the directory. The names of the labels
+#     data is expected to match the name of the corresponding input data.
+#     - transform. None or iterable. Default None. If None, minimal data transformations to have data prepared for PyTorch, will be applied
+#     (see get_default_transform). If iterable, a list-like object must be passed, containing the funtions to apply. Functions will be applied,
+#     sequentially from position 0 to position -1. Note that if different than None, the minimal data transformations (see get_default_transform) will be ignored.
+#     - validation_fraction. float. Optional. Defauls 0.2. The fraction of data to use as validation dataset.
+#     - stack_axis. Optional. Defauls 0. The axis along which data are stacked in the output arrays.
+#     - shuffle_data. Bool. Optional. Defaul True. Whether or not to shuffle data before splitting.
 
-    Outputs: tuple.
-    - position 0. Dataset class from  DatasetWithTransform(Dataset) for the training sub-dataset (input and corresponding labels).
-    - position 1. Dataset class from  DatasetWithTransform(Dataset) for the validation sub-dataset.
-    """
-    #load input data and corresponding labels
-    images, labels = load_dataset(input_data_dir, labels_data_dir, stack_axis=stack_axis)
+#     Outputs: tuple.
+#     - position 0. Dataset class from  DatasetWithTransform(Dataset) for the training sub-dataset (input and corresponding labels).
+#     - position 1. Dataset class from  DatasetWithTransform(Dataset) for the validation sub-dataset.
+#     """
+#     #load input data and corresponding labels
+#     images, labels = load_dataset(input_data_dir, labels_data_dir, stack_axis=stack_axis)
     
-    #split data in tran and validation datasets
-    (train_images, train_labels,
-     val_images, val_labels) = make_dataset_train_val_split(images, labels, validation_fraction=validation_fraction, shuffle_data=shuffle_data)
+#     #split data in tran and validation datasets
+#     (train_images, train_labels,
+#      val_images, val_labels) = make_dataset_train_val_split(images, labels, validation_fraction=validation_fraction, shuffle_data=shuffle_data)
 
-    #get default the minimum transformations to apply to the dataset if tranforms is set to None
-    if transform is None:
-        transform = get_default_transform()
+#     #get default the minimum transformations to apply to the dataset if tranforms is set to None
+#     if transform is None:
+#         transform = get_default_transform()
     
-    #Instantiate the train and validation dataset classes 
-    train_dataset = DatasetWithTransform(train_images, train_labels, transform=transform)
-    val_dataset = DatasetWithTransform(val_images, val_labels, transform=transform)
+#     #Instantiate the train and validation dataset classes 
+#     train_dataset = DatasetWithTransform(train_images, train_labels, transform=transform)
+#     val_dataset = DatasetWithTransform(val_images, val_labels, transform=transform)
 
-    return train_dataset, val_dataset
+#     return train_dataset, val_dataset
 
 
-def make_test_dataset(input_data_dir, labels_data_dir, transform=None, stack_axis=0):
+# def make_test_dataset(input_data_dir, labels_data_dir, transform=None, stack_axis=0):
+#     """
+#     Loads the test dataset. Applies tranformations, if required.
+
+#     Inputs:
+#     - input_data_dir; the directory of the input data. It is expected that only the files to be used as input data are found in the directory. Input data must
+#     have the same shape.
+#     - labels_data_dir; the directory of labels data. It is expected that only the files to be used as input data are found in the directory. The names of the labels
+#     data is expected to match the name of the corresponding input data.
+#     - transform. None or iterable. Default None. If None, minimal data transformations to have data prepared for PyTorch, will be applied
+#     (see get_default_transform). If iterable, a list-like object must be passed, containing the funtions to apply. Functions will be applied,
+#     sequentially from position 0 to position -1.
+#     - stack_axis. Optional. Defauls 0. The axis along which data are stacked in the output arrays.
+
+#     Outputs: Dataset class from DatasetWithTransform(Dataset) for the input_data and corresponding labels.
+#     """
+#     #load input data and corresponding labels
+#     images, labels = load_dataset(input_data_dir, labels_data_dir, stack_axis=stack_axis)
+
+#     #get default the minimum transformations to apply to the dataset if tranforms is set to None
+#     if transform is None:
+#         transform = get_default_transform()
+    
+#     #Instantiate the test dataset class
+#     dataset = DatasetWithTransform(images, labels, transform=transform)
+
+#     return dataset
+
+
+def make_dataset(input_data_dir, labels_data_dir, transform=None, shuffle_data=True, stack_axis=0):
     """
-    Loads the test dataset. Applies tranformations, if required.
+    Loads the a dataset and returns it as a Dataset object (sub-classed from PyTorch, inherited from DatasetWithTransform).
+    Applies tranformations, if required.
 
     Inputs:
     - input_data_dir; the directory of the input data. It is expected that only the files to be used as input data are found in the directory. Input data must
@@ -258,6 +288,7 @@ def make_test_dataset(input_data_dir, labels_data_dir, transform=None, stack_axi
     - transform. None or iterable. Default None. If None, minimal data transformations to have data prepared for PyTorch, will be applied
     (see get_default_transform). If iterable, a list-like object must be passed, containing the funtions to apply. Functions will be applied,
     sequentially from position 0 to position -1.
+    - shuffle_data.
     - stack_axis. Optional. Defauls 0. The axis along which data are stacked in the output arrays.
 
     Outputs: Dataset class from DatasetWithTransform(Dataset) for the input_data and corresponding labels.
@@ -273,3 +304,4 @@ def make_test_dataset(input_data_dir, labels_data_dir, transform=None, stack_axi
     dataset = DatasetWithTransform(images, labels, transform=transform)
 
     return dataset
+
