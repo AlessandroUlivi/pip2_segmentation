@@ -54,6 +54,9 @@ def chunk_center(image, chunk_y=256, chunk_x=256):
     Outputs: tuple.
     - position 0. 3D numpy array. image chunks are stacked on axis 0.
     - position 1. tuple. Per each chunk, the y,x coordinates of the upper-left pixels are reported.
+
+    NOTE: when image is not perfectly dividable by the chunk dimension along an axis, one extra pixels is left in the padding on the bottom and/or right
+    edges.
     """
     #calculate the number of chunks fitting the y axis
     y_chunks_n = image.shape[0]//chunk_y
@@ -80,14 +83,25 @@ def chunk_center(image, chunk_y=256, chunk_x=256):
     assert (y_chunks_n*chunk_y)+top_y_padding+bot_y_padding==image.shape[0], "the pixels splitting did not work on the y axis"
     assert (x_chunks_n*chunk_x)+left_x_padding+right_x_padding==image.shape[1], "the pixels splitting did not work on the x axis"
 
+    #initialize the starting position of the highest chunk on the y axis
     y_start = top_y_padding
     
+    #iterate through the number of chunks which could be fit on the y axis
     for y in range(y_chunks_n-1):
+
+        #initialize the starting position of the chunk on the far left on the x axis
         x_start = left_x_padding
+
+        #iterate through the number of chunks which could be fit on the x axis
         for x in range(x_chunks_n-1):
+
+            #slice image to obtain the chunck
             chunk = image[y_start:y_start+chunk_y, x_start:x_start+chunk_x]
-            print(chuck.shape)
+            print(chunk.shape)
+            #update x_start, so that the following chunk will start from the end of the previous
             x_start = x_start+chunk_x
+        
+        #update y_start, so that the following chunk will start from the end of the previous
         y_start = y_start+chunk_y
 
 
