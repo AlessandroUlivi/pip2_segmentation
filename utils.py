@@ -41,6 +41,58 @@ def check_folder_files_else_make_folder(folder_dir_to_create):
             #return False as no file is present in the folder
             return False
 
+def chunk_center(image, chunk_y=256, chunk_x=256):
+    """
+    divides a 2D image in chunks of size chunk_y * chunk_x. When the image can't be perfectly divided, chunks are centered so that a padding remains
+    at the image boarder.
+
+    Inputs:
+    - image. 2D numpy array.
+    - chunk_y. Int. Default 256. The size, in pixels, of the y axis of each single chunk. It must be <= of the size of the y axis of image.
+    - chunk_x. Int. Default 256. The size, in pixels, of the x axis of each single chunk. It must be <= of the size of the x axis of image.
+
+    Outputs: tuple.
+    - position 0. 3D numpy array. image chunks are stacked on axis 0.
+    - position 1. tuple. Per each chunk, the y,x coordinates of the upper-left pixels are reported.
+    """
+    #calculate the number of chunks fitting the y axis
+    y_chunks_n = image.shape[0]//chunk_y
+    #calculate the padding on the y axis
+    y_leftover_pixels = image.shape[0]%chunk_y
+    if y_leftover_pixels%2==0:
+        top_y_padding = int(y_leftover_pixels/2)
+        bot_y_padding = int(y_leftover_pixels/2) #this is ultimately not required
+    else:
+        top_y_padding = int((y_leftover_pixels-1)/2+1)
+        bot_y_padding = int((y_leftover_pixels-1)/2) #this is utlimately not required
+    
+    #calculate the number of chunks fitting the x axis
+    x_chunks_n = image.shape[1]//chunk_x
+    #calculate the padding on the x axis
+    x_leftover_pixels = image.shape[1]%chunk_x
+    if x_leftover_pixels%2==0:
+        left_x_padding = int(x_leftover_pixels/2)
+        right_x_padding = int(x_leftover_pixels/2) #this is ulitmately not required
+    else:
+        left_x_padding = int((x_leftover_pixels-1)/2+1)
+        right_x_padding = int((x_leftover_pixels-1)/2) #this is ultimately not required
+    
+    assert (y_chunks_n*chunk_y)+top_y_padding+bot_y_padding==image.shape[0], "the pixels splitting did not work on the y axis"
+    assert (x_chunks_n*chunk_x)+left_x_padding+right_x_padding==image.shape[1], "the pixels splitting did not work on the x axis"
+
+    y_start = top_y_padding
+    
+    for y in range(y_chunks_n-1):
+        x_start = left_x_padding
+        for x in range(x_chunks_n-1):
+            chunk = image[y_start:y_start+chunk_y, x_start:x_start+chunk_x]
+            print(chuck.shape)
+            x_start = x_start+chunk_x
+        y_start = y_start+chunk_y
+
+
+
+
 def get_random_image_label_pair(images, labels):
     """
     returns a randomly chosen image and the correponding label
