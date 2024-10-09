@@ -13,6 +13,26 @@ def listdirNHF(input_directory):
     return [f for f in os.listdir(input_directory) if not f.startswith(".")]
 
 
+def get_var_value(filename="varstore.dat"):
+    """
+    Keep track of the number of tmes a script or notebook-cell has been run. NOTE: the function relies on the presence of an exteral file.
+    This function taken from https://stackoverflow.com/questions/44012748/how-to-increment-variable-every-time-script-is-run-in-python
+
+    inputs:
+    - filename. The full directory of the external file where to store the counting of runs. By default a file named varstore.dat is expected in the
+    same folder of the script.
+
+    outputs: Int. The number of times a script or notebook cell has been run.
+    """
+    with open(filename, "a+") as f:
+        f.seek(0)
+        val = int(f.read() or 0) + 1
+        f.seek(0)
+        f.truncate()
+        f.write(str(val))
+        return val
+
+
 def check_folder_files_else_make_folder(folder_dir_to_create):
     """
     Check if a folder is present and if it contains any object. If the folder is not present, it creates it.
