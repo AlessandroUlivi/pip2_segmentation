@@ -234,6 +234,7 @@ def run_training(model,
                                                 x_dim=x_dim,
                                                 y_dim=y_dim)
 
+        # update the learning scheduler if it is provided
         if lr_scheduler_flag:
             lr_scheduler.step(current_loss)
             logger.add_scalar(tag="lr", scalar_value=lr_scheduler.get_last_lr()[0], global_step=step
