@@ -123,10 +123,28 @@ def chunk_center(image, chunk_y=256, chunk_x=256):
 
     #transform coordinates collection list in a tuple
     coords_collection_tuple = tuple(coords_collection_list)
-    
+
     return chunk_collection_array, coords_collection_tuple
 
+def measure_labelled_pixels_fraction(image):
+    """
+    returns the fraction of pixels which has value >0.
 
+    Inputs:
+    - image. n-dimensional array.
+
+    Outputs:
+    - float. Fraction of pixels whose value is >0 in image.
+    """
+    #binarize the image and rescale it the value range 0 and 1.
+    bin_image = np.where(image>0, 1,0)
+    #calculate the fraction of positive pixels
+    pos_px_fraction = np.sum(bin_image)/image.size
+    
+    assert pos_px_fraction<image.size
+    assert np.sum(bin_image)+np.sum(np.where(image>0, 0,1))==image.size
+
+    return pos_px_fraction
 
 
 def get_random_image_label_pair(images, labels):
