@@ -17,8 +17,8 @@ def validate(
     step=None,
     tb_logger=None,
     device=None,
-    x_dim=[-1,-2],
-    y_dim=[-1,-2]):
+    x_dim=[-2,-1],
+    y_dim=[-2,-1]):
 
     """
     validate the model on one epoch. The function is meant to run on the validation dataset during the model training.
