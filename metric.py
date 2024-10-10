@@ -26,6 +26,7 @@ class DiceCoefficient(nn.Module):
 class DiceLoss(nn.Module):
     """
     calculate 1-DiceCoefficient, to be used as loss function.
+    Values are expected to be in the 0-1 range (e.g. obtained from a Sigmoid activation function).
     
     inputs:
     -prediction. Tensor.
@@ -50,6 +51,7 @@ class DiceLoss(nn.Module):
 class DiceBCELoss(nn.Module):
     """
     combination of BCE and DiceLoss. This code is adapted from https://www.kaggle.com/code/bigironsphere/loss-function-library-keras-pytorch
+    Values of prediction and target are expected to be in the 0-1 range (e.g. for prediction, they have been obtained from a Sigmoid activation function).
     """
     def __init__(self):
         super(DiceBCELoss, self).__init__()
@@ -65,7 +67,14 @@ class DiceBCELoss(nn.Module):
 
 class FocalLoss(nn.Module):
     """
-    this coda was adapted from https://www.kaggle.com/code/bigironsphere/loss-function-library-keras-pytorch
+    Values of prediction and target are expected to be in the 0-1 range (e.g. for prediction, they have been obtained from a Sigmoid activation function).
+    this code was adapted from https://www.kaggle.com/code/bigironsphere/loss-function-library-keras-pytorch
+
+    Focal Loss was introduced by Lin et al of Facebook AI Research in 2017 as a means of combatting extremely imbalanced
+    datasets where positive cases were relatively rare. Their paper "Focal Loss for Dense Object Detection" is retrievable here:
+    https://arxiv.org/abs/1708.02002.
+    In practice, the researchers used an alpha-modified version of the function so I have included it in this implementation.
+
     """
     def __init__(self):
         super(FocalLoss, self).__init__()
@@ -80,39 +89,36 @@ class FocalLoss(nn.Module):
         return focal_loss
 
 
-# # define a class to weight the importance of prediction and recall within the evaluation of
-# # of a prediction. The idea is to use it to balance the importance which is given to the generation of labelled pixels when the model
-# # is used for predictions (and force it not to generate images with only 0 values).
-# class weighted_metric(nn.Module):
-#     def __init__(self, eps=1e-6):
-#         super().__init__()
-#         self.eps = eps
+class TverskyLoss(nn.Module):
+    """
+    Values of prediction and target are expected to be in the 0-1 range (e.g. for prediction, they have been obtained from a Sigmoid activation function).
+    this code was adapted from https://www.kaggle.com/code/bigironsphere/loss-function-library-keras-pytorch
 
-#     def get_true_positives(self, bin_prediction, target):
-#         return torch.sum(bin_prediction*target)
+    This loss was introduced in "Tversky loss function for image segmentationusing 3D fully convolutional deep networks",
+    retrievable here: https://arxiv.org/abs/1706.05721. It was designed to optimise segmentation on imbalanced medical datasets by utilising
+    constants that can adjust how harshly different types of error are penalised in the loss function. From the paper:
 
-#     def get_true_negatives(self, bin_prediction, target):
-#         pred_targ_sum = bin_prediction + target
-#         true_negatives = torch.sum(torch.where(pred_targ_sum==0, 1,0))
-#         return true_negatives
-    
-#     def get_false_positives(self, bin_prediction, target):
-#         return torch.sum(torch.where(target==0, bin_prediction,0))
-    
-#     def get_false_negatives(self, bin_prediction, target):
-#         return torch.sum(torch.where(bin_prediction==0, target,0))
-    
-#     def forward(self, prediction, target, w_tp=0.25, w_tn=0.25, w_fp=0.25, w_fn=0.25, bin_threshold=0.5):
-#         assert w_tp+w_tn+w_fp+w_fn==1
-#         bin_prediction = torch.where(prediction>bin_threshold, 1,0)
-#         t_p = self.get_true_positives(bin_prediction, target)
-#         t_n = self.get_true_negatives(bin_prediction, target)
-#         f_p = self.get_false_positives(bin_prediction, target)
-#         f_n = self.get_false_negatives(self, bin_prediction, target)
-#         assert t_p+t_n+f_p+f_n==target.size()
-#         assert t_p+t_n+f_p+f_n==prediction.size()
+    "in the case of α=β=0.5 the Tversky index simplifies to be the same as the Dice coefficient, which is also equal to the F1 score.
+    With α=β=1, Equation 2 produces Tanimoto coefficient, and setting α+β=1 produces the set of Fβ scores. Larger βs weigh recall higher than
+    precision (by placing more emphasis on false negatives)."
 
-#         weighted__metric = 1 - (w_tp*t_p + w_tn*t_n + w_fp*f_p + w_fn*f_n)/(t_p + t_n + f_p + f_n)
-#         return weighted__metric
+    To summarise, this loss function is weighted by the constants 'alpha' and 'beta' that penalise false positives and false negatives
+    respectively to a higher degree in the loss function as their value is increased. The beta constant in particular has applications in
+    situations where models can obtain misleadingly positive performance via highly conservative prediction.
+    You may want to experiment with different values to find the optimum. With alpha==beta==0.5, this loss becomes equivalent to Dice Loss.
+    """
+    def __init__(self):
+        super(TverskyLoss, self).__init__()
+
+    def forward(self, prediction, target, alpha=0.5, beta=0.5, eps=1e-6):
+        
+        #True Positives, False Positives & False Negatives
+        TP = (prediction * target).sum()    
+        FP = ((1-target) * prediction).sum()
+        FN = (target * (1-prediction)).sum()
+       
+        Tversky = (TP) / (TP + alpha*FP + beta*FN + eps)  
+        
+        return 1 - Tversky
 
 
