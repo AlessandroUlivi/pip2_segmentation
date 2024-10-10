@@ -179,8 +179,16 @@ class OutputConv(torch.nn.Module):
         applies the final convolution and, if indicated, the final activation function
         """
         x = self.final_conv(x)
+        # print("final convolution shape: ", x.size())
+        # print("final convolution dtype: ", x.dtype)
+        # print("final convolution max: ", np.amax(x.detach().numpy()))
+        # print("final convolution min: ", np.amin(x.detach().numpy()))
         if self.activation is not None:
             x = self.activation(x)
+            # print("final activation shape: ", x.size())
+            # print("final activation dtype: ", x.dtype)
+            # print("final activation max: ", np.amax(x.detach().numpy()))
+            # print("final activation min: ", np.amin(x.detach().numpy()))
         return x
 
 
@@ -373,7 +381,7 @@ class UNet(torch.nn.Module):
         # RIGHT SIDE - ASCENDING/UPSAMPLING SIDE
         #iterate through the levels in an ascending order. Leave out the bottom level
         for j in range(0, self.depth-1)[::-1]:  # -1 allows to leave out the bottom level. The [::-1] inverts the order of the levels so that they are ascending
-            # # use the upsample object to upsample the data (the layer_input)
+            # use the upsample object to upsample the data (the layer_input)
             upsampled = self.upsample(layer_input)
             #concatenate the output of the descending convolutional block from the level j (collected in the list convolution_outputs) and the upsampled data result
             concat = self.crop_and_concat(convolution_outputs[j], upsampled)
@@ -381,6 +389,11 @@ class UNet(torch.nn.Module):
             conv_output = self.right_convs[j](concat)
             #update layer_input, so that the output of the convolutional block will be inputed to the upsampling operation of the next (higher) level
             layer_input = conv_output
+        
+        # print("layer_input shape: ", layer_input.size())
+        # print("layer_input dtype: ", layer_input.dtype)
+        # print("layer_input max: ", np.amax(layer_input.detach().numpy()[:,33:,:,:]))
+        # print("layer_input min: ", np.amin(layer_input.detach().numpy()[:,33:,:,:]))
 
         #output the result of the final convolutional block
         return self.final_conv(layer_input)
