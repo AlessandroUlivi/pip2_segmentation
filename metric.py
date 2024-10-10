@@ -40,13 +40,9 @@ class DiceLoss(nn.Module):
     # the dice coefficient of two sets represented as vectors a, b can be
     # computed as (2 *|a b| / (abs(a) + abs(b))
     def forward(self, prediction, target):
-        
-        #flatten label and prediction tensors
-        f_prediction = prediction.view(-1)
-        f_target = target.view(-1)
 
-        intersection = torch.sum(f_prediction*f_target)
-        union = torch.sum(f_prediction)+torch.sum(f_target)
+        intersection = torch.sum(prediction*target)
+        union = torch.sum(prediction)+torch.sum(target)
         return 1 - (2 * intersection / union.clamp(min=self.eps))
 
 
