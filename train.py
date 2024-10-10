@@ -94,7 +94,8 @@ def train(
         # backpropagate the loss and adjust the parameters
         loss.backward()
         optimizer.step()
-
+        
+        # print("=== BEFORE UNET ===")
         # print("x shape: ", x.size())
         # print("x dtype: ", x.dtype)
         # print("x max: ", np.amax(x.detach().numpy()))
