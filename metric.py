@@ -3,6 +3,7 @@
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 # import numpy as np
 
 # Sorensen Dice Coefficient implemented in torch
@@ -45,6 +46,22 @@ class DiceLoss(nn.Module):
         union = torch.sum(prediction)+torch.sum(target)
         return 1 - (2 * intersection / union.clamp(min=self.eps))
 
+
+class DiceBCELoss(nn.Module):
+    """
+    combination of BCE and DiceLoss. This code is adapted from https://www.kaggle.com/code/bigironsphere/loss-function-library-keras-pytorch
+    """
+    def __init__(self):
+        super(DiceBCELoss, self).__init__()
+
+    def forward(self, prediction, target, eps=1e-6, reduction="mean"):    
+        intersection = torch.sum(prediction*target)   
+        union = torch.sum(prediction)+torch.sum(target)                       
+        dice_loss = 1 - (2 * intersection / union.clamp(min=eps))
+        BCE = F.binary_cross_entropy(prediction, target, reduction=reduction)
+        Dice_BCE = BCE + dice_loss
+        
+        return Dice_BCE
 
 # # define a class to weight the importance of prediction and recall within the evaluation of
 # # of a prediction. The idea is to use it to balance the importance which is given to the generation of labelled pixels when the model
