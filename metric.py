@@ -63,6 +63,23 @@ class DiceBCELoss(nn.Module):
         
         return Dice_BCE
 
+class FocalLoss(nn.Module):
+    """
+    this coda was adapted from https://www.kaggle.com/code/bigironsphere/loss-function-library-keras-pytorch
+    """
+    def __init__(self):
+        super(FocalLoss, self).__init__()
+
+    def forward(self, prediction, target, alpha=0.8, gamma=2, reduction="mean", eps=1e-6):
+        
+        #first compute binary cross-entropy 
+        BCE = F.binary_cross_entropy(prediction, target, reduction=reduction)
+        BCE_EXP = torch.exp(-BCE)
+        focal_loss = alpha * (1-BCE_EXP)**gamma * BCE
+                       
+        return focal_loss
+
+
 # # define a class to weight the importance of prediction and recall within the evaluation of
 # # of a prediction. The idea is to use it to balance the importance which is given to the generation of labelled pixels when the model
 # # is used for predictions (and force it not to generate images with only 0 values).
