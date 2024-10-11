@@ -6,7 +6,7 @@ import random
 import numpy as np
 import torch
 from torch.utils.data import Dataset
-# from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import minmax_scale
 from scipy.ndimage import shift as shf
 import tifffile
@@ -207,25 +207,6 @@ def random_translation(image, target):
             return image, target
     else:
         return image, target
-
-# def apply_beads_based_image_transformation_cross_corr(image_to_transform, transformation_to_use, **kwargs):
-
-#     """
-#     the following assumption is made: when image_to_transform file has >2 dimensions, YX dimensions are respectively in position -2 and -1.
-#     When the dimensions of image_to_transform are more than the dimensions of transformation_to_use, the function will fill transformations_to_use with 0
-#     starting from position 0, until the numbers of dimension match. For this reason even though the function is meant to be used to apply beads-based corrections,
-#     it will work also in other case, but the result could be incorrect.
-#     """
-    
-#     #Assert that a number of transformations equal or lower than the number of axes to be transformed is provided
-#     assert len(transformation_to_use)<=len(image_to_transform.shape), f"cannot apply a transformation on {len(image_to_transform)} axes to a {len(transformation_to_use)} dimensional image"
-
-#     #If the number of transformations is lower than the number of the axes of the file to transform, fill the transformation array with 0 at the beginnig of the array
-#     if len(transformation_to_use)!=len(image_to_transform.shape):
-#         for i in range(len(image_to_transform.shape)-len(transformation_to_use)):
-#             transformation_to_use = np.insert(transformation_to_use, 0, 0.0)
-    
-#     return shf(image_to_transform, transformation_to_use, **kwargs)
 
 
 def compose(image, target, transforms):
