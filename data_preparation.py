@@ -168,7 +168,7 @@ def random_gaussian_noise(image, target):
     """
     dice = random.choice([0,1,2,3,4,5])
     if dice==1:
-        gaussian = np.random.normal(mean=128, scale=20, size=(image.shape[1],image.shape[2]))
+        gaussian = np.random.normal(mean=128, scale=20, size=(image.shape[0],image.shape[1]))
         noise_image = image+gaussian
         return noise_image, target
     else:
