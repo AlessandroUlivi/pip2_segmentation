@@ -181,7 +181,7 @@ def random_uniform_noise(image, target):
     dice = random.choice([0,1,2,3,4,5])
     if dice==1:
         uniform_noise = np.random.rand(image.shape[0],image.shape[1])
-        rescaled_uniform_noise = minmax_scale(uniform_noise.ravel(), feature_range=(0,255)).reshape(image.shape)
+        rescaled_uniform_noise = minmax_scale(uniform_noise.ravel(), feature_range=(50,200)).reshape(image.shape)
         noise_image = image+rescaled_uniform_noise
         return noise_image, target
     else:
