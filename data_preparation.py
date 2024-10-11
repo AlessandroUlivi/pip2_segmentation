@@ -6,7 +6,9 @@ import random
 import numpy as np
 import torch
 from torch.utils.data import Dataset
-from sklearn.model_selection import train_test_split
+# from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import minmax_scale
+from scipy.ndimage import shift as shf
 import tifffile
 from utils import listdirNHF
 
@@ -145,6 +147,85 @@ def to_tensor(image, target):
     """
     return torch.from_numpy(image), torch.from_numpy(target)
     # return torch.from_numpy(image), torch.tensor([target], dtype=torch.int64)
+
+def random_flip(image, target):
+    """
+    randomly flips both the image and the target along a axis. Whether or not to flip the image is chosen randomly,
+    the axis to flip is chosen randomly. The same transformation is applied to both image and target
+    """
+    coin = random.choice([0,1])
+    if coin==1:
+        random_axis = random.choice([0,1])
+        flipped_image = np.flip(image, axis=random_axis)
+        flipped_target = np.flip(target, axis=random_axis)
+        return flipped_image, flipped_target
+    else:
+        return image, target
+
+def random_gaussian_noise(image, target):
+    """
+    adds some random noise 1 time out of 6.
+    """
+    dice = random.choice([0,1,2,3,4,5])
+    if dice==1:
+        gaussian = np.random.normal(mean=128, scale=20, size=(image.shape[1],image.shape[2]))
+        noise_image = image+gaussian
+        return noise_image, target
+    else:
+        return image, target
+
+def random_uniform_noise(image, target):
+    """
+    adds some random noise 1 time out of 6.
+    """
+    dice = random.choice([0,1,2,3,4,5])
+    if dice==1:
+        uniform_noise = np.random.rand(image.shape[1],image.shape[2])
+        rescaled_uniform_noise = minmax_scale(uniform_noise.ravel(), feature_range=(0,255)).reshape(image.shape)
+        noise_image = image+rescaled_uniform_noise
+        return noise_image, target
+    else:
+        return image, target
+
+def random_translation(image, target):
+    """
+    applies a random translation to image and target 1 time out of 6. Per each dimension of image, the maximum possible translation is
+    half the dimension size. The translation is only applied if the target image, after the translation, still has some labelled pixels.
+    """
+    dice = random.choice([0,1,2,3,4,5])
+    if dice == 1:
+        translation2apply = []
+        for d in image.shape:
+            random_translation = float(random.choice(range(d//2)))
+            translation2apply.append(random_translation)
+        translation2apply = np.asarray(translation2apply)
+        translated_target = shf(target, translation2apply)
+        if np.sum(translated_target)>0:
+            translated_image = shf(image, translation2apply)
+            return translated_image, translated_target
+        else:
+            return image, target
+    else:
+        return image, target
+
+# def apply_beads_based_image_transformation_cross_corr(image_to_transform, transformation_to_use, **kwargs):
+
+#     """
+#     the following assumption is made: when image_to_transform file has >2 dimensions, YX dimensions are respectively in position -2 and -1.
+#     When the dimensions of image_to_transform are more than the dimensions of transformation_to_use, the function will fill transformations_to_use with 0
+#     starting from position 0, until the numbers of dimension match. For this reason even though the function is meant to be used to apply beads-based corrections,
+#     it will work also in other case, but the result could be incorrect.
+#     """
+    
+#     #Assert that a number of transformations equal or lower than the number of axes to be transformed is provided
+#     assert len(transformation_to_use)<=len(image_to_transform.shape), f"cannot apply a transformation on {len(image_to_transform)} axes to a {len(transformation_to_use)} dimensional image"
+
+#     #If the number of transformations is lower than the number of the axes of the file to transform, fill the transformation array with 0 at the beginnig of the array
+#     if len(transformation_to_use)!=len(image_to_transform.shape):
+#         for i in range(len(image_to_transform.shape)-len(transformation_to_use)):
+#             transformation_to_use = np.insert(transformation_to_use, 0, 0.0)
+    
+#     return shf(image_to_transform, transformation_to_use, **kwargs)
 
 
 def compose(image, target, transforms):
