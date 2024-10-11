@@ -6,7 +6,7 @@ import random
 import numpy as np
 import torch
 from torch.utils.data import Dataset
-from sklearn.model_selection import train_test_split
+# from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import minmax_scale
 from scipy.ndimage import shift as shf
 import tifffile
