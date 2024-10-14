@@ -187,6 +187,25 @@ def random_uniform_noise(image, target):
     else:
         return image, target
 
+def random_gaussian_or_uniform_noise(image, target):
+    """
+    add random noise 1 time out of 6. The random noise is gaussian 50% of the times, uniform the rest 50%.
+    """
+    dice = random.choice([0,1,2,3,4,5])
+    if dice==1:
+        second_dice = random.choice([0,1])
+        if second_dice==0:
+            gaussian = np.random.normal(loc=128, scale=20, size=(image.shape[0],image.shape[1]))
+            noise_image = image+gaussian
+        else:
+            uniform_noise = np.random.rand(image.shape[0],image.shape[1])
+            rescaled_uniform_noise = minmax_scale(uniform_noise.ravel(), feature_range=(50,200)).reshape(image.shape)
+            noise_image = image+rescaled_uniform_noise
+        return noise_image, target
+    else:
+        return image, target
+
+
 def random_translation(image, target):
     """
     applies a random translation to image and target 1 time out of 6. Per each dimension of image, the maximum possible translation is
