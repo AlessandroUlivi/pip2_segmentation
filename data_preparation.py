@@ -150,13 +150,27 @@ def to_tensor(image, target):
 
 def random_flip(image, target):
     """
-    randomly flips both the image and the target along a axis. Whether or not to flip the image is chosen randomly,
-    the axis to flip is chosen randomly. The same transformation is applied to both image and target
+    randomly flips both the image and the target along an axis. Whether or not to flip the image is chosen randomly.
+    The axis to flip is chosen randomly. When the trasformation is applied, it is always applied, identical, to both image and target.
+    The transformation is applied 1 time out of 2.
+
+    inputs:
+    - image. 2D array.
+    - target. 2D array.
+
+    outputs: tuple.
+    - position 0. image. 1 time out of 2 it is has been flipped either on the vertical or the orizontal axis.
+    - position 1. target. 1 time out of 2 it is has been flipped either on the vertical or the orizontal axis.
     """
+    #randomly pick a number between 0 and 1
     coin = random.choice([0,1])
+    #if the number is 1, apply the flip tranformation
     if coin==1:
+        #randomly pick the axis along which to apply the transformation
         random_axis = random.choice([0,1])
+        #flip image
         flipped_image = np.flip(image, axis=random_axis)
+        #flip target
         flipped_target = np.flip(target, axis=random_axis)
         return flipped_image, flipped_target
     else:
@@ -164,11 +178,23 @@ def random_flip(image, target):
 
 def random_gaussian_noise(image, target):
     """
-    adds some random noise 1 time out of 6.
+    adds some gaussian noise 1 time out of 6 to image. Target is returned unmodified.
+
+     inputs:
+    - image. n-dimensional array. Values are expected in the range 0-255.
+    - target. n-dimensional array.
+
+    outputs: tuple.
+    - position 0. image. 1 time out of 6 gaussian noise is added.
+    - position 1. target. Unmodified.
     """
+    #randomly pick a number between 0 and 5
     dice = random.choice([0,1,2,3,4,5])
+    #if the number is 1
     if dice==1:
+        #create an array of the same shape of input but with values randomly drawn from a normal distribution centered on 128 and with a standard deviation o 20
         gaussian = np.random.normal(loc=128, scale=20, size=(image.shape[0],image.shape[1]))
+        #add noise to image
         noise_image = image+gaussian
         return noise_image, target
     else:
@@ -176,12 +202,25 @@ def random_gaussian_noise(image, target):
 
 def random_uniform_noise(image, target):
     """
-    adds some random noise 1 time out of 6.
+    adds some uniform noise 1 time out of 6 to image. Target is returned unmodified.
+
+     inputs:
+    - image. 2D array. Values are expected in the range 0-255.
+    - target. n-dimensional array.
+
+    outputs: tuple.
+    - position 0. image. 1 time out of 6 uniform noise is added.
+    - position 1. target. Unmodified.
     """
+    #randomly pick a number between 0 and 5
     dice = random.choice([0,1,2,3,4,5])
+    #if the number is 1
     if dice==1:
+        #create an array of the same shape of input but with values randomly drawn from a in the 0-1 range
         uniform_noise = np.random.rand(image.shape[0],image.shape[1])
+        #rescale values in the 50-200 range
         rescaled_uniform_noise = minmax_scale(uniform_noise.ravel(), feature_range=(50,200)).reshape(image.shape)
+        #add noise to image
         noise_image = image+rescaled_uniform_noise
         return noise_image, target
     else:
@@ -189,17 +228,35 @@ def random_uniform_noise(image, target):
 
 def random_gaussian_or_uniform_noise(image, target):
     """
-    add random noise 1 time out of 6. The random noise is gaussian 50% of the times, uniform the rest 50%.
+    adds some noise 1 time out of 6 to image. When noise is added, 50% of the time it is gaussian noise, 50% of the times is uniform noise.
+    Target is returned unmodified.
+
+     inputs:
+    - image. 2D array. Values are expected in the range 0-255.
+    - target. n-dimensional array.
+
+    outputs: tuple.
+    - position 0. image. 1 time out of 6 noise is added.
+    - position 1. target. Unmodified.
     """
+    #randomly pick a number between 0 and 5
     dice = random.choice([0,1,2,3,4,5])
+    #if the number is 1
     if dice==1:
+        #randomly pick a number between 0 and 1
         second_dice = random.choice([0,1])
-        if second_dice==0:
+        #if 1 is picked
+        if second_dice==1:
+            #create an array of the same shape of input but with values randomly drawn from a normal distribution centered on 128 and with a standard deviation o 20
             gaussian = np.random.normal(loc=128, scale=20, size=(image.shape[0],image.shape[1]))
+            #add noise to image
             noise_image = image+gaussian
         else:
+            #create an array of the same shape of input but with values randomly drawn from a in the 0-1 range 
             uniform_noise = np.random.rand(image.shape[0],image.shape[1])
+            #rescale values in the 50-200 range
             rescaled_uniform_noise = minmax_scale(uniform_noise.ravel(), feature_range=(50,200)).reshape(image.shape)
+            #add noise to image
             noise_image = image+rescaled_uniform_noise
         return noise_image, target
     else:
@@ -208,20 +265,42 @@ def random_gaussian_or_uniform_noise(image, target):
 
 def random_translation(image, target):
     """
-    applies a random translation to image and target 1 time out of 6. Per each dimension of image, the maximum possible translation is
-    half the dimension size. The translation is only applied if the target image, after the translation, still has some labelled pixels.
+    applies a random translation to image and target a little less than 1 time out of 6. Per each dimension of image, the maximum possible translation is
+    half the dimension size. The translation is only applied if the target image, after the translation, still has some labelled pixels, for this reason,
+    it is not possible to establish that it is applied exactely 1 time out of 6.
+    When the translation is applied, it is applied identical to both image and target. Image and target are returned with the same shape,
+    for this reason, a padding procedure is also applied. Pad values are 0.
+
+    inputs:
+    - image. n-dimensional array. Note that the function has only been tested on 2D arrays.
+    - target. n-dimensional array of same shape of image. Labelled pixels are expected to have value >0. Background pixels are expected to have value 0.
+
+    outputs: tuple.
+    - position 0. image. A little less than 1 time out of 6, input image has been translated.
+    - position 1. target. A little less than 1 time out of 6, input target has been translated.
     """
+    #randomly pick a number between 0 and 1
     dice = random.choice([0,1,2,3,4,5])
+    #if the number is 1
     if dice == 1:
+        #initialize a collection list for the translation of each image (and target) dimension
         translation2apply = []
+        #iterate through the dimension of image
         for d in image.shape:
+            #pick a random number in a range between 0 and half the dimension
             random_translation = float(random.choice(range(d//2)))
+            #add the randomly picked number to the collection list
             translation2apply.append(random_translation)
+        #transform the collection list to an array
         translation2apply = np.asarray(translation2apply)
+        #shift the target image
         translated_target = shf(target, translation2apply)
+        #if the resulting translated target contains at least a label pixel
         if np.sum(translated_target)>0:
+            #translate also image
             translated_image = shf(image, translation2apply)
             return translated_image, translated_target
+        #Don't apply the translation if the translated target does not contain any labelled pixel
         else:
             return image, target
     else:
