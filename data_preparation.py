@@ -244,9 +244,9 @@ def random_gaussian_or_uniform_noise(image, target):
     #if the number is 1
     if dice==1:
         #randomly pick a number between 0 and 1
-        second_dice = random.choice([0,1])
+        coin = random.choice([0,1])
         #if 1 is picked
-        if second_dice==1:
+        if coin==1:
             #create an array of the same shape of input but with values randomly drawn from a normal distribution centered on 128 and with a standard deviation o 20
             gaussian = np.random.normal(loc=128, scale=20, size=(image.shape[0],image.shape[1]))
             #add noise to image
