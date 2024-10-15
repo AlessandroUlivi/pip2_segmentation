@@ -18,6 +18,8 @@ def get_var_value(filename="varstore.dat"):
     Keep track of the number of tmes a script or notebook-cell has been run. NOTE: the function relies on the presence of an exteral file.
     This function taken from https://stackoverflow.com/questions/44012748/how-to-increment-variable-every-time-script-is-run-in-python
 
+    For example, to use the function, call it as "runs_counter = get_var_value(filename="varstore.dat")" and add a "varstore.dat" in the script folder.
+
     inputs:
     - filename. The full directory of the external file where to store the counting of runs. By default a file named varstore.dat is expected in the
     same folder of the script.
