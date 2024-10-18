@@ -8,7 +8,7 @@ from utils import crop_spatial_dimensions
 import numpy as np
 
 
-def validate(
+def test(
     model,
     loader,
     loss_function,
@@ -21,7 +21,7 @@ def validate(
     y_dim=[-2,-1]):
 
     """
-    validate the model on one epoch. The function is meant to run on the validation dataset during the model training.
+    test the model on one epoch. The function is meant to run on the validation dataset during the model training.
     It exploits TensorBoard to keep track of the training progress (variation of the loss function).
 
     Inputs:
