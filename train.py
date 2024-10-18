@@ -6,7 +6,7 @@ import torch
 import torch.nn as nn
 import numpy as np
 from utils import crop_spatial_dimensions, get_current_lr
-from test import test
+from test_model import test_model
 import torch.optim as optim
 
 
@@ -224,7 +224,7 @@ def run_training(model,
         step = epoch * len(train_loader)
 
         # test the model
-        current_loss, current_metric = test(model=model,
+        current_loss, current_metric = test_model(model=model,
                                                 loader=val_loader,
                                                 loss_function=loss_function,
                                                 metric=metric,
