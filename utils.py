@@ -212,6 +212,34 @@ def crop_spatial_dimensions(x, y, x_dim=[-2,-1], y_dim=[-2,-1]):
         return x[slices]
 
 
+def dict2mdtable(d, key='Name', val='Value', transform_2_string=True):
+    """
+    retunrs a dictionary organized as a table but as a string object.
+    this code is taken from https://github.com/tensorflow/tensorboard/issues/46
+
+    inputs:
+    - d. Dictionary. The dictionary to be transformed in a "table-like" string. NOTE: each key and each value of the d must be a string. If it is not
+    or a string, the input transform_2_string must be set to True (default) and they will be transformed to strings. An error is raised
+    when at least 1 key or value of d is not a string and transform_2_string is False.
+    is not a string
+    - key. Str. Optional. Default "Name". The name to give to the "column-like" corresponding to the keys of the dictionary d.
+    - val. Str. Optional. Default "Value". The name to give to the "column-like" corresponding to the values of the dictionary d.
+    - transform_2_string. Bool. Optional. Default True. If True, all keys and values of d are transformed to strings. If False, keys and values of d are
+    expected to be strings or an error is raised.
+
+    outputs: string. The string organised keys and values of the dictionary d as in form of a table. The table-like string has 2 columns and as many rows
+    as the number of key-value pairs in the dictionary d. Keys and values of the dictionary d are listed under their respective column-like parts
+    of the string under.
+    """
+    if transform_2_string:
+        rows = [f'| {str(key)} | {str(val)} |']
+    else:
+        rows = [f'| {key} | {val} |']
+    # rows += ['|--|--|']
+    rows += [f'| {k} | {v} |' for k, v in d.items()]
+    return "  \n".join(rows)
+
+
 def get_current_lr(optimizer):
     """
     returns one of the valid learning rates during model training.
