@@ -5,7 +5,7 @@
 import torch
 import torch.nn as nn
 import numpy as np
-from utils import crop_spatial_dimensions, get_current_lr
+from utils import crop_spatial_dimensions, get_current_lr, save_checkpoint
 from test_model import test_model
 import torch.optim as optim
 
@@ -240,8 +240,8 @@ def run_training(model,
             logger.add_scalar(tag="lr", scalar_value=lr_scheduler.get_last_lr()[0], global_step=step
             )
         
-        # #save checkpoint if a path is specified and the metric is the best
-        # if len(path)>0 and current_metric>best_metric:
-        #     save_checkpoint(model, optimizer, epoch, path, key)
+        #save checkpoint if a path is specified and the metric is the best
+        if len(path)>0 and current_metric>best_metric:
+            save_checkpoint(model, optimizer, epoch, path, key)
 
 
