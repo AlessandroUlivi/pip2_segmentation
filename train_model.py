@@ -21,7 +21,10 @@ def train(
     tb_logger=None,
     device=None,
     x_dim=[-2,-1],
-    y_dim=[-2,-1]):
+    y_dim=[-2,-1],
+    return_loss_metric=False,
+    metric=None,
+    bin_threshold=None):
     """
     train the model for 1 epoch. Exploits TensorBoard to keep track of the training progress (variation of the loss function).
 
@@ -40,9 +43,18 @@ def train(
     If available, it will be used. If not available, the cpu will be used.
     - x_dim. List of int. Optional. Default [-2, -1]. The position of Y and X axes in x input image. The parameter is passed to the x_dim input in crop_spatial_dimensions.
     - y_dim. List of int. Optional. Default [-2, -1]. The position of Y and X axes in y input image. The parameter is passed to the y_dim input in crop_spatial_dimensions.
+    - return_loss_metric. Bool. Optional. Default False. If True, the function returns the average loss and metric.
+    - metric. None, function or class. Optional. Default None. The metric to use for evaluating the results. It must be provided and it is only used if return_loss_metri=True.
+    - bin_threshold. None or float. Optional. Default None. The value to use as highpass threshold for binarizing the predicted image before calculating the metric. It must be provided and it is only used if return_loss_metri=True.
 
-    The function has no output.
+    Outputs:
+    - if return_loss_metric=False (Default), the function has no output.
+    - if return_loss_metric=True, the function returns the average loss value and the average metric value for the data.
     """
+    #check that a metric is provided if return_loss_metric is set to True
+    if return_loss_metric:
+        assert metric!=None, "a metric must be provided if return_loss_metric is set to True"
+
     #if no device is passed, check if the gpu is available, else use the cpu
     if device is None:
         if torch.cuda.is_available():
@@ -69,6 +81,11 @@ def train(
                             scalar_value=lr,
                             global_step=epoch * n_batches)
 
+    # initialize loss and metric values - they are used to obtain the cumulative sum of the loss values and metric values of the data in the loader
+    if return_loss_metric:
+        cum_loss_val = 0
+        cum_metric_val = 0
+
     # iterate over the batches of the epoch
     for batch_id, (x, y) in enumerate(loader):
         
@@ -94,6 +111,16 @@ def train(
         # backpropagate the loss and adjust the parameters
         loss.backward()
         optimizer.step()
+
+        #calculate metric and update cumulative loss and metric values if return_loss_metric is set to True
+        if return_loss_metric:
+            # calculate the metric value after binarizing the predictions
+            binary_prediction = torch.where(prediction>bin_threshold, 1,0)
+            metric_val = metric(binary_prediction,y)
+            
+            # add loss_val and metric_val to their cumulative respectives (cum_loss_val and cum_metric_val)
+            cum_loss_val += loss_val
+            cum_metric_val += metric_val
         
         # print("=== BEFORE UNET ===")
         # print("x shape: ", x.size())
@@ -140,6 +167,13 @@ def train(
                     img_tensor=prediction.to("cpu").detach(),
                     global_step=step,
                 )
+
+    # get the average loss value and metric if return_loss_metric is set to True
+    if return_loss_metric:
+        avg_loss_val = cum_loss_val / len(loader)
+        avg_metric_val = cum_metric_val / len(loader)
+
+        return avg_loss_val, avg_metric_val
 
 
 def run_training(model,
@@ -217,8 +251,10 @@ def run_training(model,
             tb_logger=logger,
             device=device,
             x_dim=x_dim,
-            y_dim=y_dim
-        )
+            y_dim=y_dim,
+            return_loss_metric=False,
+            metric=None,
+            bin_threshold=None)
 
         #calculate the training step
         step = epoch * len(train_loader)
@@ -244,4 +280,99 @@ def run_training(model,
         if len(path)>0 and current_metric>best_metric:
             save_checkpoint(model, optimizer, epoch, path, key)
 
+# def run_training_no_val(model,
+#                         optimizer,
+#                         metric,
+#                         n_epochs,
+#                         train_loader,
+#                         loss_function,
+#                         logger=None,
+#                         log_interval=100,
+#                         device=None,
+#                         key="checkpoint",
+#                         path="",
+#                         lr_scheduler_flag = False,
+#                         lr_kwargs={"mode":"min", "factor": 0.1, "patience":2},
+#                         x_dim=[-2,-1],
+#                         y_dim=[-2,-1]):
+#     """
+#     trains a model over multiple epochs without validation. This function can be used to train a final model using the full data (train data + val data
+#     + test data).
+#     Exploits TensorBoard to keep track of the training progress (variation of the loss function).
 
+#     Inputs:
+#     - model. The model to train. Must be derived from torch.nn.Module.
+#     - optimizer. The optimizer of the training process. An object from PyTorch is expected. Refer to https://pytorch.org/docs/stable/optim.html
+#     - metric. The metric to use to evaluate the training process.
+#     - n_epochs. Int. The number of epochs to use for the training process.
+#     - train_loader. Train data organized in minibatches for the epoch (with inputs and labels). A DataLoader object form torch.utils.data is expected. Refer to https://pytorch.org/tutorials/beginner/basics/data_tutorial.html
+#     - loss_function. The loss_function of the training processs. An object from PyTorch is expected. Refer to https://pytorch.org/docs/stable/nn.html#loss-functions
+#     - logger. TensorBoard logger. To keep track of progress. Refer to https://www.tensorflow.org/tensorboard?hl=it
+#     - log_interval. Int. Optional. Default 100. After how many batches the TensorBoard console is updated by saving the loss function,
+#     in order to track the progression of the training process.
+#     - device. Optional. None or device. Default None. The device to use for the training. If None, it will automatically checked if a cuda gpu is available.
+#     If available, it will be used. If not available, the cpu will be used.
+#     - key. String. Optional. Default 'checkpoint'. The key to use for saving the checkpoint.
+#     - path. String. Optional. Default "" (empty string). If empty string, no checkpoints are saved during the training process. If different than an empty string,
+#     the provided string will be used as directory to save checkpoints. An error is returned if the directory doesn't exist.
+#     - lr_scheduler_flag. Bool. Optional. Default False. If True, torch.optim.lr_scheduler.ReduceLROnPlateau will be used as learning rate scheduler. No learning scheduler will be used otherwise.
+#     - lr_kwargs. Dictionary. Optional. Default {"mode":"min", "factor": 0.1, "patience":2}. The kwargs parameters to be passed to torch.optim.lr_scheduler.ReduceLROnPlateau if lr_scheduler_flag==True.
+#     - x_dim. List of int. Optional. Default [-2, -1]. The position of Y and X axes in x input image. The parameter is passed to the x_dim input in crop_spatial_dimensions.
+#     - y_dim. List of int. Optional. Default [-2, -1]. The position of Y and X axes in y input image. The parameter is passed to the y_dim input in crop_spatial_dimensions.
+
+#     The function has no output.
+#     """
+    
+#     #if no device is passed, check if the gpu is available, else use the cpu
+#     if device is None:
+#         if torch.cuda.is_available():
+#             device = torch.device("cuda")
+#         else:
+#             device = torch.device("cpu")
+
+#     # # send model to device
+#     # model = model.to(device)
+
+#     #initialize the learning scheduler, if specified
+#     if lr_scheduler_flag:
+#         lr_scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, **lr_kwargs)
+
+#     # train for n_epochs. During the training inspect the predictions
+#     for epoch in range(n_epochs):
+#         # train the model
+#         train(
+#             model=model,
+#             loader=train_loader,
+#             optimizer=optimizer,
+#             loss_function=loss_function,
+#             epoch=epoch,
+#             log_interval=log_interval,
+#             tb_logger=logger,
+#             device=device,
+#             x_dim=x_dim,
+#             y_dim=y_dim
+#         )
+
+#         #calculate the training step
+#         step = epoch * len(train_loader)
+
+#         # test the model
+#         current_loss, current_metric = test_model(model=model,
+#                                                 loader=val_loader,
+#                                                 loss_function=loss_function,
+#                                                 metric=metric,
+#                                                 step=step,
+#                                                 tb_logger=logger,
+#                                                 device=device,
+#                                                 x_dim=x_dim,
+#                                                 y_dim=y_dim)
+
+#         # update the learning scheduler if it is provided
+#         if lr_scheduler_flag:
+#             lr_scheduler.step(current_loss)
+#             logger.add_scalar(tag="lr", scalar_value=lr_scheduler.get_last_lr()[0], global_step=step
+#             )
+        
+#         #save checkpoint if a path is specified and the metric is the best
+#         if len(path)>0 and current_metric>best_metric:
+#             save_checkpoint(model, optimizer, epoch, path, key)
