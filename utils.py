@@ -2,6 +2,9 @@ import os
 import numpy as np
 import random
 import torch
+import pandas as pd
+from tensorboard.backend.event_processing.event_accumulator import EventAccumulator
+
 
 
 def listdirNHF(input_directory):
@@ -296,7 +299,7 @@ def load_checkpoint(model, path, optimizer=None, key="checkpoint"):
     if optimizer==None. The model whose checkpoint has been saved.
 
     If optimizer!=None. The output is a tuple with:
-    - position 0.  The model whose checkpoint has been saved.
+    - position 0. The model whose checkpoint has been saved.
     - position 1. The optimizer of the training process.
     - position 2. The epoch of the saved checkpoint.
     """
@@ -310,3 +313,32 @@ def load_checkpoint(model, path, optimizer=None, key="checkpoint"):
         return model, optimizer, epoch
     
     return model
+
+
+def load_tensorboard_data_df(log_dir, tb_variable):
+    """
+    Returns the values of a single scalar variable of a tensorboard event summary register file as a pandas dataframe.
+    This code is adapted from https://stackoverflow.com/questions/42355122/can-i-export-a-tensorflow-summary-to-csv
+
+    inputs:
+    - log_dir. directory. One of two options can be passed: 1) the directory of the folder containing a single tensorboard summary register file. 2) the
+    directory of the tensorboard summary register file.
+    - tb_variable. String. The name of the scalar variable whose values whould be loaded, as it was entered in the tensorboard summary register file.
+
+    outputs: Pandas DataFrame with 2 columns: steps and tb_variable and as many rows as the values entered for the tb_variable in the summary register file.
+    """
+    #load events stored in the summary register file 
+    event_accumulator = EventAccumulator(log_dir)
+    event_accumulator.Reload()
+
+    #select the tb_variable
+    events = event_accumulator.Scalars(tb_variable)
+
+    # get steps and corresponding values for the tb_variable as numpy arrays
+    x = np.asarray([s.step for s in events])
+    y = np.asarray([v.value for v in events])
+
+    #form a dataframe with the values
+    df = pd.DataFrame({"step": x, tb_variable: y})
+    return df
+
