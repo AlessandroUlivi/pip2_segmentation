@@ -4,9 +4,10 @@ Author: Alessandro Ulivi (ale.ulivi@gmail.com)
 
 Start date (yyyy/mm/dd): 2024/08/21
 
-Status: ongoing (2024/09/17)
+Status: ongoing (2024/10/21)
 
 Description: the goal of the project is to implement the segmentation of pip2-enriched domains in the C. elegans early embryo. The project was started by Alessandro Ulivi at IGBMC (Illkirch-Graffenstaden, France). Pip2-enriched domains are fluorescently labelled structures. The labelling is obtained by the transgenic expression of a mCherry fluorescent tag (refer to the C. elegans transgenic line ACR074). Images have been acquired using a Nikon CSU-X1 spinning disk microscope, a 100x, 1.4 NA, oil immersion objective. The pixel size is 0.11x0.11 um.
+The backbone of the project relies on the material from the course EMBO-DL4MIA (https://github.com/dl4mia)
 
 Dependencies: The pip2_segmentation.yml allows to create an environment with all the dependencies to run the scripts. The present package versions were used to establish the pipeline:
 - python 3.12.5
@@ -27,6 +28,6 @@ Dependencies: The pip2_segmentation.yml allows to create an environment with all
 - tensorboard 2.17.0
 - roifile 2024.5.24
 
-NOTE: the environment is set up to run on cpu (package cpuonly - pytorch Build py3.12_cpu_0).
+NOTE: the environment is set up to run on cpu (package cpuonly - pytorch Build py3.12_cpu_0). If gpu support is possible, some parts of the code should also be adapted.
 
 Roadmap:
