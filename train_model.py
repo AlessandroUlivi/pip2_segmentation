@@ -186,6 +186,7 @@ def run_training(model,
                  bin_threshold=0.5,
                  logger=None,
                  log_interval=100,
+                 log_image_interval=20,
                  device=None,
                  key="checkpoint",
                  path="",
@@ -208,6 +209,8 @@ def run_training(model,
     - bin_threshold. Float. Optional. Default 0.5. The value to use as highpass threshold for binarizing the predicted image before calculating the metric.
     - logger. TensorBoard logger. To keep track of progress. Refer to https://www.tensorflow.org/tensorboard?hl=it
     - log_interval. Int. Optional. Default 100. After how many batches the TensorBoard console is updated by saving the loss function,
+    in order to track the progression of the training process.
+     - log_image_interval. Int. Optional. Default 20. After how many batches the TensorBoard console is updated by saving the prediction results,
     in order to track the progression of the training process.
     - device. Optional. None or device. Default None. The device to use for the training. If None, it will automatically checked if a cuda gpu is available.
     If available, it will be used. If not available, the cpu will be used.
@@ -250,6 +253,7 @@ def run_training(model,
             loss_function=loss_function,
             epoch=epoch,
             log_interval=log_interval,
+            log_image_interval=log_image_interval,
             tb_logger=logger,
             device=device,
             x_dim=x_dim,
@@ -289,6 +293,7 @@ def run_training(model,
 #                         n_epochs,
 #                         train_loader,
 #                         loss_function,
+#                         bin_threshold=0.5,
 #                         logger=None,
 #                         log_interval=100,
 #                         device=None,
@@ -298,10 +303,24 @@ def run_training(model,
 #                         lr_kwargs={"mode":"min", "factor": 0.1, "patience":2},
 #                         x_dim=[-2,-1],
 #                         y_dim=[-2,-1]):
+    
+#     # log_image_interval=20,
+#     # tb_logger=None,
+#     # device=None,
+#     # x_dim=[-2,-1],
+#     # y_dim=[-2,-1],
+#     # return_loss_metric=False,
+#     # metric=None,
+#     # bin_threshold=None
+    
 #     """
 #     trains a model over multiple epochs without validation. This function can be used to train a final model using the full data (train data + val data
 #     + test data).
 #     Exploits TensorBoard to keep track of the training progress (variation of the loss function).
+
+#     NOTE: checkpoints are saved based on the the average matric obtained at each training epoch: if the metric improves a checkpoint is saved. As the
+#     metric is calculated on the training data, this procedure is at risk of saving a models overfitting the data. Thus this functions must be run on an
+#     adequate number of epochs, established not to overfit.
 
 #     Inputs:
 #     - model. The model to train. Must be derived from torch.nn.Module.
@@ -310,6 +329,7 @@ def run_training(model,
 #     - n_epochs. Int. The number of epochs to use for the training process.
 #     - train_loader. Train data organized in minibatches for the epoch (with inputs and labels). A DataLoader object form torch.utils.data is expected. Refer to https://pytorch.org/tutorials/beginner/basics/data_tutorial.html
 #     - loss_function. The loss_function of the training processs. An object from PyTorch is expected. Refer to https://pytorch.org/docs/stable/nn.html#loss-functions
+#     - bin_threshold. Float. Optional. Default 0.5. The value to use as highpass threshold for binarizing the predicted image before calculating the metric.
 #     - logger. TensorBoard logger. To keep track of progress. Refer to https://www.tensorflow.org/tensorboard?hl=it
 #     - log_interval. Int. Optional. Default 100. After how many batches the TensorBoard console is updated by saving the loss function,
 #     in order to track the progression of the training process.
@@ -343,32 +363,19 @@ def run_training(model,
 #     # train for n_epochs. During the training inspect the predictions
 #     for epoch in range(n_epochs):
 #         # train the model
-#         train(
-#             model=model,
-#             loader=train_loader,
-#             optimizer=optimizer,
-#             loss_function=loss_function,
-#             epoch=epoch,
-#             log_interval=log_interval,
-#             tb_logger=logger,
-#             device=device,
-#             x_dim=x_dim,
-#             y_dim=y_dim
-#         )
+#         current_loss, current_metric = train(model=model,
+#                                              loader=train_loader,
+#                                              optimizer=optimizer,
+#                                              loss_function=loss_function,
+#                                              epoch=epoch,
+#                                              log_interval=log_interval,
+#                                              tb_logger=logger,
+#                                              device=device,
+#                                              x_dim=x_dim,
+#                                              y_dim=y_dim)
 
 #         #calculate the training step
 #         step = epoch * len(train_loader)
-
-#         # test the model
-#         current_loss, current_metric = test_model(model=model,
-#                                                 loader=val_loader,
-#                                                 loss_function=loss_function,
-#                                                 metric=metric,
-#                                                 step=step,
-#                                                 tb_logger=logger,
-#                                                 device=device,
-#                                                 x_dim=x_dim,
-#                                                 y_dim=y_dim)
 
 #         # update the learning scheduler if it is provided
 #         if lr_scheduler_flag:
