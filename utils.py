@@ -303,7 +303,10 @@ def load_checkpoint(model, path, optimizer=None, key="checkpoint"):
     - position 1. The optimizer of the training process.
     - position 2. The epoch of the saved checkpoint.
     """
-    load_path = os.path.join(path, f"{key}.pt")
+    if ".pt" in key:
+        load_path = os.path.join(path, f"{key}")
+    else:
+        load_path = os.path.join(path, f"{key}.pt")
     checkpoint=torch.load(load_path)
     model.load_state_dict(checkpoint["model"])
 
