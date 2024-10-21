@@ -117,8 +117,8 @@ def train(model,
             binary_prediction = torch.where(prediction>bin_threshold, 1,0)
             metric_val = metric(binary_prediction,y)
             
-            # add loss_val and metric_val to their cumulative respectives (cum_loss_val and cum_metric_val)
-            cum_loss_val += loss_val
+            # add loss and metric_val to their cumulative respectives (cum_loss_val and cum_metric_val)
+            cum_loss_val += loss.item()
             cum_metric_val += metric_val
         
         # print("=== BEFORE UNET ===")
