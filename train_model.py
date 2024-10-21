@@ -376,11 +376,11 @@ def run_training_no_val(model,
                                                  metric=metric,
                                                  bin_threshold=bin_threshold)
 
-        # print(
-        # "\nAverage loss: {:.4f}, Average Metric: {:.4f}\n".format(
-        #     avg_epoch_loss, avg_epoch_metric
-        # )
-        # )
+        print(
+        "\nAverage loss: {:.4f}, Average Metric: {:.4f}\n".format(
+            avg_epoch_loss, avg_epoch_metric
+        )
+        )
 
         #calculate the training step
         step = epoch * len(train_loader)
