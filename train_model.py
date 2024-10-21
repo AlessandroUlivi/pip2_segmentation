@@ -183,6 +183,7 @@ def run_training(model,
                  train_loader,
                  val_loader,
                  loss_function,
+                 bin_threshold=0.5,
                  logger=None,
                  log_interval=100,
                  device=None,
@@ -204,6 +205,7 @@ def run_training(model,
     - train_loader. Train data organized in minibatches for the epoch (with inputs and labels). A DataLoader object form torch.utils.data is expected. Refer to https://pytorch.org/tutorials/beginner/basics/data_tutorial.html
     - val_loader. Validation data organized in minibatches for the epoch (with inputs and labels). A DataLoader object form torch.utils.data is expected. Refer to https://pytorch.org/tutorials/beginner/basics/data_tutorial.html
     - loss_function. The loss_function of the training processs. An object from PyTorch is expected. Refer to https://pytorch.org/docs/stable/nn.html#loss-functions
+    - bin_threshold. Float. Optional. Default 0.5. The value to use as highpass threshold for binarizing the predicted image before calculating the metric.
     - logger. TensorBoard logger. To keep track of progress. Refer to https://www.tensorflow.org/tensorboard?hl=it
     - log_interval. Int. Optional. Default 100. After how many batches the TensorBoard console is updated by saving the loss function,
     in order to track the progression of the training process.
@@ -261,14 +263,15 @@ def run_training(model,
 
         # test the model
         current_loss, current_metric = test_model(model=model,
-                                                loader=val_loader,
-                                                loss_function=loss_function,
-                                                metric=metric,
-                                                step=step,
-                                                tb_logger=logger,
-                                                device=device,
-                                                x_dim=x_dim,
-                                                y_dim=y_dim)
+                                                  loader=val_loader,
+                                                  loss_function=loss_function,
+                                                  metric=metric,
+                                                  bin_threshold=bin_threshold,
+                                                  step=step,
+                                                  tb_logger=logger,
+                                                  device=device,
+                                                  x_dim=x_dim,
+                                                  y_dim=y_dim)
 
         # update the learning scheduler if it is provided
         if lr_scheduler_flag:
