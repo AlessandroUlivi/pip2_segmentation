@@ -387,7 +387,7 @@ def run_training_no_val(model,
         
         # log to tensorboard if it is provided
         if logger is not None:
-            step = epoch * len(loader)
+            step = epoch * len(train_loader)
             logger.add_scalar(
                 tag="train_avg_metric", scalar_value=current_metric, global_step=step+len(train_loader)
             )
