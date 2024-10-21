@@ -360,28 +360,34 @@ def run_training_no_val(model,
 
     # train for n_epochs. During the training inspect the predictions
     for epoch in range(n_epochs):
-        # train the model
-        current_loss, current_metric = train(model=model,
-                                             loader=train_loader,
-                                             optimizer=optimizer,
-                                             loss_function=loss_function,
-                                             epoch=epoch,
-                                             log_interval=log_interval,
-                                             log_image_interval=log_image_interval,
-                                             tb_logger=logger,
-                                             device=device,
-                                             x_dim=x_dim,
-                                             y_dim=y_dim,
-                                             return_loss_metric=True,
-                                             metric=metric,
-                                             bin_threshold=bin_threshold)
+        # train the model and calculate the average loss and metric for the epoch
+        avg_epoch_loss, avg_epoch_metric = train(model=model,
+                                                 loader=train_loader,
+                                                 optimizer=optimizer,
+                                                 loss_function=loss_function,
+                                                 epoch=epoch,
+                                                 log_interval=log_interval,
+                                                 log_image_interval=log_image_interval,
+                                                 tb_logger=logger,
+                                                 device=device,
+                                                 x_dim=x_dim,
+                                                 y_dim=y_dim,
+                                                 return_loss_metric=True,
+                                                 metric=metric,
+                                                 bin_threshold=bin_threshold)
+
+        # print(
+        # "\nAverage loss: {:.4f}, Average Metric: {:.4f}\n".format(
+        #     avg_epoch_loss, avg_epoch_metric
+        # )
+        # )
 
         #calculate the training step
         step = epoch * len(train_loader)
 
         # update the learning scheduler if it is provided
         if lr_scheduler_flag:
-            lr_scheduler.step(current_loss)
+            lr_scheduler.step(avg_epoch_loss)
             logger.add_scalar(tag="lr", scalar_value=lr_scheduler.get_last_lr()[0], global_step=step
             )
         
@@ -389,11 +395,11 @@ def run_training_no_val(model,
         if logger is not None:
             step = epoch * len(train_loader)
             logger.add_scalar(
-                tag="train_avg_metric", scalar_value=current_metric, global_step=step+len(train_loader)
+                tag="train_avg_metric", scalar_value=avg_epoch_metric, global_step=step+len(train_loader)
             )
 
         #save checkpoint if a path is specified and the metric is the best
-        if len(path)>0 and current_metric>best_metric:
+        if len(path)>0 and avg_epoch_metric>best_metric:
             save_checkpoint(model, optimizer, epoch, path, key)
 
 
