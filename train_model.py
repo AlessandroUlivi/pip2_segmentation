@@ -168,10 +168,10 @@ def train(
                     global_step=step,
                 )
 
-    # get the average loss value and metric if return_loss_metric is set to True
+    # get the average loss value and metric for the epoch if return_loss_metric is set to True
     if return_loss_metric:
-        avg_loss_val = cum_loss_val / len(loader)
-        avg_metric_val = cum_metric_val / len(loader)
+        avg_loss_val = cum_loss_val / n_batches
+        avg_metric_val = cum_metric_val / n_batches
 
         return avg_loss_val, avg_metric_val
 
