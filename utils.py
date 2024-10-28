@@ -66,6 +66,29 @@ def check_folder_files_else_make_folder(folder_dir_to_create):
             #return False as no file is present in the folder
             return False
 
+def minmax_normalization(image, axis=(0,1)):
+    """
+    returns the min-max normalization of a image. By defalt the image is expected to be bidimensional.
+    Inputs:
+    - image. n-dimensional np.array. channel dimension in position 0.
+    - axis. Int or tuple of ints. Optional. Default (0,1). The axis/axes to use to calculate the min and max values of image.
+
+    Outputs:np.array. min-max normalized image on axis/axes specified by axis. dtype float32.
+    """
+    #initialize a small variable, to prevent a 0 division
+    eps = 1.e-6
+    #transform image to 'float32' dtype, for allowing a correct division calculation
+    image = image.astype('float32')
+    #calculate the minumum of the image using the axis
+    image_min = image.min(axis=axis, keepdims=True)
+    #subtract the minimum from the image
+    image -= image_min
+    #calculate the maximum of the image using the axes 1 and 2
+    image_max = image.max(axis=axis, keepdims=True)
+    #divide the image for the maximum value NOTE: add eps to maximum value to prevent a 0 division
+    image /= (image_max + eps)
+    return image
+
 def chunk_center(image, chunk_y=256, chunk_x=256):
     """
     divides a 2D image in chunks of size chunk_y * chunk_x. When the image can't be perfectly divided, chunks are centered so that a padding remains
@@ -192,27 +215,27 @@ def get_random_image_label_pair(images, labels):
     return images[random_indx, ...], labels[random_indx, ...]
 
 def crop_spatial_dimensions(x, y, x_dim=[-2,-1], y_dim=[-2,-1]):
-        """
-        Center-crop x to match spatial dimensions given by y. Note: spatial dimensions the xy image dimension, their positions within x and y shapes can be
-        expressed using x_dim and y_dim. By default they are expected in positions -1 and -2.
-        It is assumed that no dimension of y has size > than the corresponding dimension in x.
-        """
+    """
+    Center-crop x to match spatial dimensions given by y. Note: spatial dimensions the xy image dimension, their positions within x and y shapes can be
+    expressed using x_dim and y_dim. By default they are expected in positions -1 and -2.
+    It is assumed that no dimension of y has size > than the corresponding dimension in x.
+    """
 
-        #get the desired output size by joining all the dimensions of x (input) before the last 2 (before YX)
-        #with the YX dimension (the last 2 dimensions of the size) of x (input)
-        x_target_size = x.size()[:-2] + y.size()[-2:]
+    #get the desired output size by joining all the dimensions of x (input) before the last 2 (before YX)
+    #with the YX dimension (the last 2 dimensions of the size) of x (input)
+    x_target_size = x.size()[:-2] + y.size()[-2:]
 
-        #per each dimension, get the how many pixels should be added/removed (offset) from x in order to match y.
-        #Note: the offset is divided by 2 because it will be added/removed from x to both sides of each dimension.
-        offset = tuple((a - b) // 2 for a, b in zip(x.size(), x_target_size))
+    #per each dimension, get the how many pixels should be added/removed (offset) from x in order to match y.
+    #Note: the offset is divided by 2 because it will be added/removed from x to both sides of each dimension.
+    offset = tuple((a - b) // 2 for a, b in zip(x.size(), x_target_size))
 
-        #create a tuple of "slice" objects, with one object per dimension of the inputs.
-        #each slice indicates the beginning and end (initial and final indeces) of the part of x which should be kept.
-        #NOTE Because each slice starts at the index 'offset' and ends at the index 'offset + size of y' the process effectively guarantees
-        #that the central part of x is maintened and matches y.
-        slices = tuple(slice(o, o + s) for o, s in zip(offset, x_target_size))
+    #create a tuple of "slice" objects, with one object per dimension of the inputs.
+    #each slice indicates the beginning and end (initial and final indeces) of the part of x which should be kept.
+    #NOTE Because each slice starts at the index 'offset' and ends at the index 'offset + size of y' the process effectively guarantees
+    #that the central part of x is maintened and matches y.
+    slices = tuple(slice(o, o + s) for o, s in zip(offset, x_target_size))
 
-        return x[slices]
+    return x[slices]
 
 
 def dict2mdtable(d, key='Name', val='Value', transform_2_string=True):
