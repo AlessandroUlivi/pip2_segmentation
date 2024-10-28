@@ -145,6 +145,7 @@ def to_tensor(image, target):
     - position 1. target transformed to tensor
 
     """
+    # return torch.from_numpy(image.copy()), torch.from_numpy(target.copy())
     return torch.from_numpy(image), torch.from_numpy(target)
     # return torch.from_numpy(image), torch.tensor([target], dtype=torch.int64)
 
@@ -181,7 +182,7 @@ def random_gaussian_noise(image, target):
     adds some gaussian noise 1 time out of 6 to image. Target is returned unmodified.
 
      inputs:
-    - image. n-dimensional array. Values are expected in the range 0-255.
+    - image. n-dimensional array. Values are expected in the range 0-1.
     - target. n-dimensional array.
 
     outputs: tuple.
@@ -192,11 +193,13 @@ def random_gaussian_noise(image, target):
     dice = random.choice([0,1,2,3,4,5])
     #if the number is 1
     if dice==1:
-        #create an array of the same shape of input but with values randomly drawn from a normal distribution centered on 128 and with a standard deviation o 20
-        gaussian = np.random.normal(loc=128, scale=20, size=image.shape)
+        #create an array of the same shape of input but with values randomly drawn from a normal distribution centered on 0.5 and with a standard deviation of 0.1
+        gaussian = np.random.normal(loc=0.5, scale=0.1, size=image.shape)
         #add noise to image
         noise_image = image+gaussian
-        return noise_image, target
+        #rescale the values in the 0-1 range
+        rescaled_noise_image = minmax_scale(noise_image.ravel(), feature_range=(0.0,1.0)).reshape(noise_image.shape)
+        return rescaled_noise_image, target
     else:
         return image, target
 
@@ -205,7 +208,7 @@ def random_uniform_noise(image, target):
     adds some uniform noise 1 time out of 6 to image. Target is returned unmodified.
 
      inputs:
-    - image. 2D array. Values are expected in the range 0-255.
+    - image. 2D array. Values are expected in the range 0-1.
     - target. n-dimensional array.
 
     outputs: tuple.
@@ -218,11 +221,13 @@ def random_uniform_noise(image, target):
     if dice==1:
         #create an array of the same shape of input but with values randomly drawn from a in the 0-1 range
         uniform_noise = np.random.rand(image.shape[0],image.shape[1])
-        #rescale values in the 50-200 range
-        rescaled_uniform_noise = minmax_scale(uniform_noise.ravel(), feature_range=(50,200)).reshape(image.shape)
+        #rescale uniform noise values in the 0.25-0.75 range
+        rescaled_uniform_noise = minmax_scale(uniform_noise.ravel(), feature_range=(0.25,0.75)).reshape(image.shape)
         #add noise to image
         noise_image = image+rescaled_uniform_noise
-        return noise_image, target
+        #rescale the values in the 0-1 range
+        rescaled_noise_image = minmax_scale(noise_image.ravel(), feature_range=(0.0,1.0)).reshape(noise_image.shape)
+        return rescaled_noise_image, target
     else:
         return image, target
 
@@ -232,7 +237,7 @@ def random_gaussian_or_uniform_noise(image, target):
     Target is returned unmodified.
 
      inputs:
-    - image. 2D array. Values are expected in the range 0-255.
+    - image. 2D array. Values are expected in the range 0-1.
     - target. n-dimensional array.
 
     outputs: tuple.
@@ -248,17 +253,21 @@ def random_gaussian_or_uniform_noise(image, target):
         #if 1 is picked
         if coin==1:
             #create an array of the same shape of input but with values randomly drawn from a normal distribution centered on 128 and with a standard deviation o 20
-            gaussian = np.random.normal(loc=128, scale=20, size=image.shape)
+            gaussian = np.random.normal(loc=0.5, scale=0.1, size=image.shape)
             #add noise to image
             noise_image = image+gaussian
+            #rescale the values in the 0-1 range
+            rescaled_noise_image = minmax_scale(noise_image.ravel(), feature_range=(0.0,1.0)).reshape(noise_image.shape)
         else:
             #create an array of the same shape of input but with values randomly drawn from a in the 0-1 range 
             uniform_noise = np.random.rand(image.shape[0],image.shape[1])
-            #rescale values in the 50-200 range
-            rescaled_uniform_noise = minmax_scale(uniform_noise.ravel(), feature_range=(50,200)).reshape(image.shape)
+            #rescale values in the 0.25-0.75 range
+            rescaled_uniform_noise = minmax_scale(uniform_noise.ravel(), feature_range=(0.25,0.75)).reshape(image.shape)
             #add noise to image
             noise_image = image+rescaled_uniform_noise
-        return noise_image, target
+            #rescale the values in the 0-1 range
+            rescaled_noise_image = minmax_scale(noise_image.ravel(), feature_range=(0.0,1.0)).reshape(noise_image.shape)
+        return rescaled_noise_image, target
     else:
         return image, target
 
