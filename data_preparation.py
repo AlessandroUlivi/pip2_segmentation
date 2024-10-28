@@ -145,8 +145,8 @@ def to_tensor(image, target):
     - position 1. target transformed to tensor
 
     """
-    # return torch.from_numpy(image.copy()), torch.from_numpy(target.copy())
-    return torch.from_numpy(image), torch.from_numpy(target)
+    return torch.from_numpy(image.copy()), torch.from_numpy(target.copy())
+    # return torch.from_numpy(image), torch.from_numpy(target)
     # return torch.from_numpy(image), torch.tensor([target], dtype=torch.int64)
 
 def random_flip(image, target):
