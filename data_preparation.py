@@ -297,7 +297,7 @@ def random_translation(image, target):
         #iterate through the dimension of image
         for d in image.shape:
             #pick a random number in a range between 0 and half the dimension
-            random_translation = float(random.choice(range(d//2)))
+            random_translation = float(random.choice(range(-d//2, d//2)))
             #add the randomly picked number to the collection list
             translation2apply.append(random_translation)
         #transform the collection list to an array
