@@ -198,7 +198,7 @@ def random_gaussian_noise(image, target):
         #add noise to image
         noise_image = image+gaussian
         #rescale the values in the 0-1 range
-        rescaled_noise_image = minmax_scale(noise_image.ravel(), feature_range=(0.0,1.0)).reshape(noise_image.shape)
+        rescaled_noise_image = minmax_scale(noise_image.ravel(), feature_range=(0.0,1.0)).reshape(noise_image.shape).astype(image.dtype)
         return rescaled_noise_image, target
     else:
         return image, target
@@ -226,7 +226,7 @@ def random_uniform_noise(image, target):
         #add noise to image
         noise_image = image+rescaled_uniform_noise
         #rescale the values in the 0-1 range
-        rescaled_noise_image = minmax_scale(noise_image.ravel(), feature_range=(0.0,1.0)).reshape(noise_image.shape)
+        rescaled_noise_image = minmax_scale(noise_image.ravel(), feature_range=(0.0,1.0)).reshape(noise_image.shape).astype(image.dtype)
         return rescaled_noise_image, target
     else:
         return image, target
@@ -257,7 +257,7 @@ def random_gaussian_or_uniform_noise(image, target):
             #add noise to image
             noise_image = image+gaussian
             #rescale the values in the 0-1 range
-            rescaled_noise_image = minmax_scale(noise_image.ravel(), feature_range=(0.0,1.0)).reshape(noise_image.shape)
+            rescaled_noise_image = minmax_scale(noise_image.ravel(), feature_range=(0.0,1.0)).reshape(noise_image.shape).astype(image.dtype)
         else:
             #create an array of the same shape of input but with values randomly drawn from a in the 0-1 range 
             uniform_noise = np.random.rand(image.shape[0],image.shape[1])
@@ -266,7 +266,7 @@ def random_gaussian_or_uniform_noise(image, target):
             #add noise to image
             noise_image = image+rescaled_uniform_noise
             #rescale the values in the 0-1 range
-            rescaled_noise_image = minmax_scale(noise_image.ravel(), feature_range=(0.0,1.0)).reshape(noise_image.shape)
+            rescaled_noise_image = minmax_scale(noise_image.ravel(), feature_range=(0.0,1.0)).reshape(noise_image.shape).astype(image.dtype)
         return rescaled_noise_image, target
     else:
         return image, target
@@ -275,14 +275,14 @@ def random_gaussian_or_uniform_noise(image, target):
 def random_translation(image, target):
     """
     applies a random translation to image and target a little less than 1 time out of 6. Per each dimension of image, the maximum possible translation is
-    half the dimension size. The translation is only applied if the target image, after the translation, still has some labelled pixels, for this reason,
+    half the dimension size. The translation is only applied if the target image, after the translation, still has at least 1 labelled pixel, for this reason,
     it is not possible to establish that it is applied exactely 1 time out of 6.
     When the translation is applied, it is applied identical to both image and target. Image and target are returned with the same shape,
     for this reason, a padding procedure is also applied. Pad values are 0.
 
     inputs:
     - image. n-dimensional array. Note that the function has only been tested on 2D arrays.
-    - target. n-dimensional array of same shape of image. Labelled pixels are expected to have value >0. Background pixels are expected to have value 0.
+    - target. n-dimensional array of same shape of image. Labelled pixels are expected to have value >=1. Background pixels are expected to have value 0.
 
     outputs: tuple.
     - position 0. image. A little less than 1 time out of 6, input image has been translated.
@@ -305,10 +305,12 @@ def random_translation(image, target):
         #shift the target image
         translated_target = shf(target, translation2apply)
         #if the resulting translated target contains at least a label pixel
-        if np.sum(translated_target)>0:
+        if np.sum(translated_target)>=1:
             #translate also image
             translated_image = shf(image, translation2apply)
-            return translated_image, translated_target
+            #ensure that translated_target values are remain the same of the input image after translation
+            translated_target_within_input_range = np.where(translated_target>=1.0,translated_target, 0.0)
+            return translated_image, translated_target_within_input_range
         #Don't apply the translation if the translated target does not contain any labelled pixel
         else:
             return image, target
