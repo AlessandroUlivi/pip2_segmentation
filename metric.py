@@ -3,6 +3,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 # import numpy as np
+# from skimage.feature import canny
+
 
 # Sorensen Dice Coefficient implemented in torch
 # the coefficient takes values in two discrete arrays
@@ -84,7 +86,7 @@ class FocalLoss(nn.Module):
     def __init__(self):
         super(FocalLoss, self).__init__()
 
-    def forward(self, prediction, target, alpha=0.8, gamma=2, reduction="mean", eps=1e-6):
+    def forward(self, prediction, target, alpha=1, gamma=5, reduction="mean", eps=1e-6):
         
         #first compute binary cross-entropy 
         BCE = F.binary_cross_entropy(prediction, target, reduction=reduction)
@@ -127,3 +129,25 @@ class TverskyLoss(nn.Module):
         return 1 - Tversky
 
 
+class BCE_EdgeDiceLoss(nn.Module):
+    """
+    """
+    def __init__(self):
+        super(BCE_EdgeDiceLoss, self).__init__()
+
+    def forward(self, prediction, target, reduction="mean", eps=1e-6):
+        
+        gx_prediction, gy_prediction = torch.gradient(prediction[0,...])
+        gx_target, gy_target = torch.gradient(target[0,...])
+        prediction_edge = gy_prediction*gy_prediction + gx_prediction*gx_prediction
+        target_edge = gy_target*gy_target + gx_target*gx_target
+        bin_prediction_edge = torch.where(prediction_edge!=0.0, 1.0,0.0)
+        bin_target_edge = torch.where(target_edge!=0.0,1.0,0.0)
+
+        edge_intersection = torch.sum(bin_prediction_edge*bin_target_edge)   
+        edge_union = torch.sum(bin_prediction_edge)+torch.sum(bin_target_edge)                       
+        edge_dice_loss = 1 - (2 * edge_intersection / edge_union.clamp(min=eps))
+        BCE = F.binary_cross_entropy(prediction, target, reduction=reduction)
+        BCE_EdgeDice = BCE + edge_dice_loss
+        
+        return BCE_EdgeDice
