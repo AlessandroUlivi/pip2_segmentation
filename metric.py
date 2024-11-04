@@ -137,8 +137,8 @@ class BCE_EdgeDiceLoss(nn.Module):
 
     def forward(self, prediction, target, reduction="mean", eps=1e-6):
         
-        gx_prediction, gy_prediction = torch.gradient(prediction[0,...])
-        gx_target, gy_target = torch.gradient(target[0,...])
+        gx_prediction, gy_prediction = torch.gradient(prediction[0,0,...])
+        gx_target, gy_target = torch.gradient(target[0,0,...])
         prediction_edge = gy_prediction*gy_prediction + gx_prediction*gx_prediction
         target_edge = gy_target*gy_target + gx_target*gx_target
         bin_prediction_edge = torch.where(prediction_edge!=0.0, 1.0,0.0)
