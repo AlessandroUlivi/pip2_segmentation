@@ -103,6 +103,22 @@ def add_channel(image, target, axis_to_use=0):
     target_w_c = np.expand_dims(target, axis=axis_to_use)
     return image_w_c, target_w_c
 
+def add_channel_and_batch(image, axis_to_use=0):
+    """
+    Add two extra dimension to images at position axis_to_use.
+    NOTE: Although the position can be changed, this is meant to be done so that it could be interpreted as the color channel and batch dimensions by PyTorch. Final output (BCWH)
+    
+    Inputs:
+    - image. np.array.
+    - axis_to_use. Int. Optional. Defaul 0. The position in image.shape where the extra dimensions are added.
+
+    Outputs: np.array. Image with extra dimensions of size 1 in position axis_to_use.
+
+    """
+    # put channel first
+    image_w_c = np.expand_dims(image, axis=axis_to_use)
+    image_w_b = np.expand_dims(image_w_c, axis=axis_to_use)
+    return image_w_b
 
 def normalize(image, target):
     """
