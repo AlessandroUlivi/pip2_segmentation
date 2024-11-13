@@ -65,6 +65,48 @@ class ConvBlock(torch.nn.Module):
         return self.conv_pass(x)
 
 
+# class Downsample(torch.nn.Module):
+#     """
+#     Downsampling class for a unet. Performs a 2D downsampling using max-pooling as a default method.
+#     It is possible to specify the downsampling factor using the parameter downsample_factor (int). Each size of the input image must be dividable by the
+#     downsampling_factor (no remainder must be present).
+#     """
+#     def __init__(self, downsample_factor: int):
+#         #call the bound __init__ from the parent class (torch.nn.Module) that follows the child class (ConvBlock).
+#         #refer to https://stackoverflow.com/questions/222877/what-does-super-do-in-python-difference-between-super-init-and-expl
+#         #refer to https://stackoverflow.com/questions/576169/understanding-python-super-with-init-methods
+#         super().__init__()
+
+#         self.downsample_factor = downsample_factor
+
+#         #defines the downsampling operation (max-pooling)
+#         self.down = torch.nn.MaxPool2d(
+#             downsample_factor
+#         ) 
+
+#     def check_valid(self, image_size: tuple[int, int]) -> bool:
+#         """Check if the downsample factor evenly divides each image dimension
+#         """
+#         for dim in image_size:
+#             if dim % self.downsample_factor != 0:
+#                 return False
+#         return True
+    
+#     #define forward function, required for PyTorch to take advantage of the Downsample class behind the scene
+#     def forward(self, x):
+#         """
+#         applies downsample to a 3D tensor (x, CYX) and returns the result.
+#         Raises an error if the at least one of the YX dimensions is not dividable by self.downsample_factor (see above).
+#         """
+#         dim_2_check = tuple(x.size()[-2:]) #only the last 2 dimensions matter, as the output of the convolutional block is 3D where channels are in position 1
+#         if not self.check_valid(dim_2_check):
+#             raise RuntimeError(
+#                 "Can not downsample shape %s with factor %s"
+#                 % (x.size(), self.downsample_factor)
+#             )
+
+#         return self.down(x)
+
 class Downsample(torch.nn.Module):
     """
     Downsampling class for a unet. Performs a 2D downsampling using max-pooling as a default method.
@@ -84,29 +126,27 @@ class Downsample(torch.nn.Module):
             downsample_factor
         ) 
 
-    def check_valid(self, image_size: tuple[int, int]) -> bool:
-        """Check if the downsample factor evenly divides each image dimension
-        """
-        for dim in image_size:
-            if dim % self.downsample_factor != 0:
-                return False
-        return True
+    # def check_valid(self, image_size: tuple[int, int]) -> bool:
+    #     """Check if the downsample factor evenly divides each image dimension
+    #     """
+    #     for dim in image_size:
+    #         if dim % self.downsample_factor != 0:
+    #             return False
+    #     return True
     
     #define forward function, required for PyTorch to take advantage of the Downsample class behind the scene
     def forward(self, x):
         """
         applies downsample to a 3D tensor (x, CYX) and returns the result.
-        Raises an error if the at least one of the YX dimensions is not dividable by self.downsample_factor (see above).
         """
-        dim_2_check = tuple(x.size()[-2:]) #only the last 2 dimensions matter, as the output of the convolutional block is 3D where channels are in position 1
-        if not self.check_valid(dim_2_check):
-            raise RuntimeError(
-                "Can not downsample shape %s with factor %s"
-                % (x.size(), self.downsample_factor)
-            )
+        # dim_2_check = tuple(x.size()[-2:]) #only the last 2 dimensions matter, as the output of the convolutional block is 3D where channels are in position 1
+        # if not self.check_valid(dim_2_check):
+        #     raise RuntimeError(
+        #         "Can not downsample shape %s with factor %s"
+        #         % (x.size(), self.downsample_factor)
+        #     )
 
         return self.down(x)
-
 
 class CropAndConcat(torch.nn.Module):
     """
