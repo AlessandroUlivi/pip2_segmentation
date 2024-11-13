@@ -3,6 +3,7 @@ import numpy as np
 import random
 import torch
 import pandas as pd
+from scipy.interpolate import make_interp_spline
 # from tensorboard.backend.event_processing.event_accumulator import EventAccumulator
 
 
@@ -305,7 +306,7 @@ def save_checkpoint(model, optimizer, n_epoch, path, key="checkpoint"):
     )
 
 
-def load_checkpoint(model, path, optimizer=None, key="checkpoint"):
+def load_checkpoint(model, path, optimizer=None, key="checkpoint", map_location=None):
     """
     loads a saved checkpoint of a pytorch model. NOTE: it is expected that the checkpoint has extension .pt () and has been saved using the torch.save function.
     Refer to the documentation https://pytorch.org/docs/stable/generated/torch.save.html.
@@ -317,6 +318,7 @@ def load_checkpoint(model, path, optimizer=None, key="checkpoint"):
     - key. String. Optional. Default "checkpoint". The name of the checkpoint saved file. NOTE: this is the name without extension. Thus, the full name is expected
     be key.pt
     - optimizer. Optional. Default None. The optimizer of the model whose checkpoints have been saved. An object from PyTorch is expected. Refer to https://pytorch.org/docs/stable/optim.html.
+    - map_location. Optional. Default None. If None, nothing will be passed to map_location within torch.load. If specified, the parameter will be passed to map_location.
 
     Outputs:
     if optimizer==None. The model whose checkpoint has been saved.
@@ -330,7 +332,10 @@ def load_checkpoint(model, path, optimizer=None, key="checkpoint"):
         load_path = os.path.join(path, f"{key}")
     else:
         load_path = os.path.join(path, f"{key}.pt")
-    checkpoint=torch.load(load_path)
+    if map_location==None:
+        checkpoint=torch.load(load_path)
+    else:
+        checkpoint=torch.load(load_path, map_location=map_location)
     model.load_state_dict(checkpoint["model"])
 
     if optimizer:
@@ -390,4 +395,10 @@ def load_tensorboard_data_df(reloaded_event_accumul, tb_variable):
     #form a dataframe with the values
     df = pd.DataFrame({"step": x, tb_variable: y})
     return df
+
+def interpolate_curve(x,y,n=500, **kwargs):
+    X_Y_Spline = make_interp_spline(x, y, **kwargs)
+    X_ = np.linspace(x.min(), x.max(), n)
+    Y_ = X_Y_Spline(X_)
+    return X_,Y_
 
