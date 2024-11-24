@@ -22,4 +22,5 @@ dependencies:
   - tensorboard
   - pip:
     - roifile
+    - kornia
 
