@@ -27,6 +27,7 @@ Dependencies: The pip2_segmentation.yml allows to create an environment with all
 - torchaudio 2.4.0
 - tensorboard 2.17.0
 - roifile 2024.5.24
+- kornia 0.7.4
 
 NOTE: the environment (package cpuonly - pytorch Build py3.12_cpu_0) and the notebooks are set up to run on cpu.
 In order to run the scripts with gpu support:
