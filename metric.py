@@ -2,6 +2,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torchvision.transforms import GaussianBlur
 # import numpy as np
 # from skimage.feature import canny
 
@@ -151,3 +152,26 @@ class BCE_EdgeDiceLoss(nn.Module):
         BCE_EdgeDice = BCE + edge_dice_loss
         
         return BCE_EdgeDice
+
+class BCE_softEdgeDiceLoss(nn.Module):
+    """
+    """
+    def __init__(self):
+        super(BCE_softEdgeDiceLoss, self).__init__()
+
+    def forward(self, prediction, kernel_size=3, sigma=1, reduction="mean", eps=1e-6):
+        
+        gx_prediction, gy_prediction = torch.gradient(prediction[0,...])
+        prediction_edge = gy_prediction*gy_prediction + gx_prediction*gx_prediction
+        bin_prediction_edge = torch.where(prediction_edge>0, 1,0)
+        unsqueezed_bin_prediction_edge = torch.unsqueeze(bin_prediction_edge, dim=0)
+        gaussian_smoother = GaussianBlur(kernel_size=kernel_size, sigma=sigma)
+        gau_smooth_prediction_edge = gaussian_smoother(unsqueezed_bin_prediction_edge)
+
+        # edge_intersection = torch.sum(bin_prediction_edge*bin_target_edge)   
+        # edge_union = torch.sum(bin_prediction_edge)+torch.sum(bin_target_edge)                       
+        # edge_dice_loss = 1 - (2 * edge_intersection / edge_union.clamp(min=eps))
+        # BCE = F.binary_cross_entropy(prediction, target, reduction=reduction)
+        # BCE_EdgeDice = BCE + edge_dice_loss
+        
+        return bin_prediction_edge, gau_smooth_prediction_edge
