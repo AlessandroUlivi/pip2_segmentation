@@ -15,6 +15,8 @@ def train(model,
           optimizer,
           loss_function,
           epoch,
+          bce_weight=1,
+          dice_weight=1,
           log_interval=100,
           log_image_interval=20,
           tb_logger=None,
@@ -33,6 +35,8 @@ def train(model,
     - optimizer. The optimizer of the training process. An object from PyTorch is expected. Refer to https://pytorch.org/docs/stable/optim.html
     - loss_function. The loss_function of the training processs. An object from PyTorch is expected. Refer to https://pytorch.org/docs/stable/nn.html#loss-functions
     - epoch. Int. The epoch number within the training process.
+    - bce_weight. Int or float. Optional. Default 1. The weight of the BCELoss in the loss function.
+    - dice_weight. Int or float. Optional. Default. 1. The weight of the DiceLoss in the loss function.
     - log_interval. Int. Optional. Default 100. After how many batches the TensorBoard console is updated by saving the loss function,
     in order to track the progression of the training process.
     - log_image_interval. Int. Optional. Default 20. After how many batches the TensorBoard console is updated by saving the prediction results,
@@ -105,7 +109,7 @@ def train(model,
             y = y.type(prediction.dtype)
         
         #calculate the loss value
-        loss = loss_function(prediction, y)
+        loss = loss_function(prediction, y, bce_weight=bce_weight, dice_weight=dice_weight)
 
         # backpropagate the loss and adjust the parameters
         loss.backward()
@@ -183,6 +187,8 @@ def run_training(model,
                  val_loader,
                  loss_function,
                  bin_threshold=0.5,
+                 bce_weight=1,
+                 dice_weight=1,
                  logger=None,
                  log_interval=100,
                  log_image_interval=20,
@@ -206,6 +212,8 @@ def run_training(model,
     - val_loader. Validation data organized in minibatches for the epoch (with inputs and labels). A DataLoader object form torch.utils.data is expected. Refer to https://pytorch.org/tutorials/beginner/basics/data_tutorial.html
     - loss_function. The loss_function of the training processs. An object from PyTorch is expected. Refer to https://pytorch.org/docs/stable/nn.html#loss-functions
     - bin_threshold. Float. Optional. Default 0.5. The value to use as highpass threshold for binarizing the predicted image before calculating the metric.
+    - bce_weight. Int or float. Optional. Default 1. The weight of the BCELoss in the loss function.
+    - dice_weight. Int or float. Optional. Default. 1. The weight of the DiceLoss in the loss function.
     - logger. TensorBoard logger. To keep track of progress. Refer to https://www.tensorflow.org/tensorboard?hl=it
     - log_interval. Int. Optional. Default 100. After how many batches the TensorBoard console is updated by saving the loss function,
     in order to track the progression of the training process.
@@ -250,6 +258,8 @@ def run_training(model,
               optimizer=optimizer,
               loss_function=loss_function,
               epoch=epoch,
+              bce_weight=bce_weight,
+              dice_weight=dice_weight,
               log_interval=log_interval,
               log_image_interval=log_image_interval,
               tb_logger=logger,
@@ -293,6 +303,8 @@ def run_training_no_val(model,
                         train_loader,
                         loss_function,
                         bin_threshold=0.5,
+                        bce_weight=1,
+                        dice_weight=1,
                         logger=None,
                         log_interval=100,
                         log_image_interval=20,
@@ -322,6 +334,8 @@ def run_training_no_val(model,
     - train_loader. Train data organized in minibatches for the epoch (with inputs and labels). A DataLoader object form torch.utils.data is expected. Refer to https://pytorch.org/tutorials/beginner/basics/data_tutorial.html
     - loss_function. The loss_function of the training processs. An object from PyTorch is expected. Refer to https://pytorch.org/docs/stable/nn.html#loss-functions
     - bin_threshold. Float. Optional. Default 0.5. The value to use as highpass threshold for binarizing the predicted image before calculating the metric.
+    - bce_weight. Int or float. Optional. Default 1. The weight of the BCELoss in the loss function.
+    - dice_weight. Int or float. Optional. Default. 1. The weight of the DiceLoss in the loss function.
     - logger. TensorBoard logger. To keep track of progress. Refer to https://www.tensorflow.org/tensorboard?hl=it
     - log_interval. Int. Optional. Default 100. After how many batches the TensorBoard console is updated by saving the loss function,
     in order to track the progression of the training process.
@@ -366,6 +380,8 @@ def run_training_no_val(model,
                                                  optimizer=optimizer,
                                                  loss_function=loss_function,
                                                  epoch=epoch,
+                                                 bce_weight=bce_weight,
+                                                 dice_weight=dice_weight,
                                                  log_interval=log_interval,
                                                  log_image_interval=log_image_interval,
                                                  tb_logger=logger,
