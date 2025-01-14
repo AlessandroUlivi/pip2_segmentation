@@ -32,7 +32,7 @@ Dependencies: The pip2_segmentation.yml allows to create an environment with all
 NOTE: the environment (package cpuonly - pytorch Build py3.12_cpu_0) and the notebooks are set up to run on cpu.
 In order to run the scripts with gpu support:
 - remove the cpuonly package from the environment.
-- set device to "cuda" if gpu is available in run_training_w_validation.ipynb and in run_test.ipynb by uncommenting the appropriate lines (and commenting out "device = torch.device("cpu")").
+- set device to "cuda" if gpu is available in run_training_w_validation.ipynb, in run_test.ipynb and in segment_data.ipynb by uncommenting the appropriate lines (and commenting out the line "device = torch.device("cpu")").
 
 Roadmap:
 2025/01/14. Need to:
