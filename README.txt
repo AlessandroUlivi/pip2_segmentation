@@ -35,3 +35,7 @@ In order to run the scripts with gpu support:
 - set device to "cuda" if gpu is available in run_training_w_validation.ipynb and in run_test.ipynb by uncommenting the appropriate lines (and commenting out "device = torch.device("cpu")").
 
 Roadmap:
+2025/01/14. Need to:
+1) complete the documentation of test_model within test_model.py (log_image_interv is not in the input variables, step is missing).
+2) pass a proper step to test_model in run_test.ipynb.
+3) complete the documentation of DiceBCELoss and BCE_EdgeDiceLoss in metric.py (no description is present for the latter, no description of the weights is present for the first)
