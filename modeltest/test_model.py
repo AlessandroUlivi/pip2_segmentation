@@ -4,7 +4,7 @@
 # import math
 import torch
 import torch.nn as nn
-from utils import crop_spatial_dimensions
+from utils.utils_funct import crop_spatial_dimensions
 import numpy as np
 
 

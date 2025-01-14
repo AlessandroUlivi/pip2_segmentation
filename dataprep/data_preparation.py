@@ -10,7 +10,7 @@ from torch.utils.data import Dataset
 from sklearn.preprocessing import minmax_scale
 from scipy.ndimage import shift as shf
 import tifffile
-from utils import listdirNHF
+from utils.utils_funct import listdirNHF
 
 
 def load_dataset(input_data_dir, labels_data_dir, stack_axis=0):

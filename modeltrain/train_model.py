@@ -5,7 +5,7 @@
 import torch
 import torch.nn as nn
 import numpy as np
-from utils import crop_spatial_dimensions, get_current_lr, save_checkpoint
+from utils.utils_funct import crop_spatial_dimensions, get_current_lr, save_checkpoint
 from modeltest.test_model import test_model
 import torch.optim as optim
 
