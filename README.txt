@@ -45,6 +45,7 @@ Roadmap:
 7) check that the model works properly whit different depth, kernel size and padding (I can't remember if I did this already)
 8) git-ignore pycache
 9) don't save all the "empty" masks for the validation and test datasets, but only some of them
-10) join train and validation datasets when generating them, avoiding masks with no labelled pixels, to form the dataset used for the final training
+10) randomise the chunking of the images to avoid the bias of having pip2 enriched domains only at boarders
+11) join train and validation datasets when generating them, avoiding masks with no labelled pixels, to form the dataset used for the final training
 
 
