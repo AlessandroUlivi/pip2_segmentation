@@ -42,4 +42,7 @@ Roadmap:
 4) complete the documentation of DiceBCELoss and BCE_EdgeDiceLoss in metric.py (no description is present for the latter, no description of the weights is present for the first)
 5) properly write the notebooks' markdowns.
 6) document interpolate_curve in utils.py
+7) check that the model works properly whit different depth, kernel size and padding (I can't remember if I did this already)
+8) git-ignore pycache
+
 
