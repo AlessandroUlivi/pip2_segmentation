@@ -44,5 +44,6 @@ Roadmap:
 6) document interpolate_curve in utils.py
 7) check that the model works properly whit different depth, kernel size and padding (I can't remember if I did this already)
 8) git-ignore pycache
+9) don't save all the "empty" masks for the validation and test datasets, but only some of them
 
 
