@@ -175,6 +175,126 @@ def chunk_center(image, chunk_y=256, chunk_x=256):
 
     return chunk_collection_array, coords_collection_tuple
 
+
+def random_crop(image, min_y_size=256, min_x_size=256):
+    """
+    NOTE: limit cases have not been tested for this function.
+    """
+    # verify that inputs are correct
+    assert min_y_size>0, "min_y_size must be > 1"
+    assert min_y_size<=image.shape[0], "min_y_size must be <= of input image y dimension"
+    assert min_x_size>0, "min_y_size must be >1"
+    assert min_x_size<=image.shape[1], "min_x_size must be <= of input image x dimension"
+
+    def crop_dimension(image1, dimension2use, min_size):
+        # randomize the choice between picking the smaller coordinate first and larger coordinate second or the opposite
+        small_first = random.choice([True, False])
+
+        # if small_first coordinate is picked first
+        if small_first:
+
+            # randomly pick the small coordinate, making sure that it will not result in a cropped image of size smaller than min_size
+            small_coord = random.choice(range(0,image1.shape[dimension2use]-min_size+1))
+
+            # check that small coordinate is not closer to the image size than the min_size
+            assert small_coord + min_size <= image1.shape[dimension2use]
+
+            # randomly pick the larger coordinate, making sure that it will not result in a cropped image of size smaller than min_size
+            if small_coord + min_size == image1.shape[dimension2use]:
+                large_coord = image1.shape[dimension2use]
+            else:
+                large_coord = random.choice(range(small_coord + min_size, image1.shape[dimension2use]+1))
+        
+        else:
+            # randomly pick the large coordinate, making sure that it will not result in a cropped image of size smaller than min_size
+            large_coord = random.choice(range(min_size, image1.shape[dimension2use]+1))
+
+            # check that large_coord coordinate is not bigger than the image size
+            assert large_coord<=image1.shape[dimension2use]
+
+            # randomly pick the small coordinate, making sure that it will not result in a cropped image of size smaller than min_size
+            if large_coord == min_size:
+                small_coord = 0
+            else:
+                small_coord = random.choice(range(0, large_coord - min_size+1))
+
+        # security checks
+        assert small_coord>=0
+        assert large_coord<=image1.shape[dimension2use]
+        assert large_coord-small_coord>=min_size
+
+        return small_coord, large_coord
+
+    # retun the image is min_y_size and min_x_size are equal to the sizes of image
+    if min_y_size==image.shape[0] and min_x_size==image.shape[1]:
+        crop_image = image
+
+    # only crop the first dimension if min_x_size is equal to the size of image
+    elif min_y_size!=image.shape[0] and min_x_size==image.shape[1]:
+        
+        # get the coordinates for the cropping
+        top_y_row, bot_y_row = crop_dimension(image1=image, dimension2use=0, min_size=min_y_size)
+        
+        # crop the image
+        crop_image = image[top_y_row:bot_y_row,:]
+
+        # check that if top and bot y_row coordinates are at the edge, the image is not cropped
+        if top_y_row==0 and bot_y_row==image.shape[0]:
+            assert crop_image.shape[0]==image.shape[0]
+
+        # check that if the distance between top and bot coordinates is the min_y_size, the cropped image is of size min_y_size
+        if bot_y_row-top_y_row==min_y_size:
+            assert crop_image.shape[0]==min_y_size
+    
+    # only crop the second dimension is min_y_size is equal to the size of image
+    elif min_y_size!=image.shape[0] and min_x_size==image.shape[1]:
+
+        # get the coordinates for the cropping
+        left_x_col , right_x_col = crop_dimension(image1=image, dimension2use=1, min_size=min_x_size)
+        
+        # crop the image
+        crop_image = image[:,left_x_col:right_x_col]
+
+        # check that if left and right x_col coordinates are at the edge, the image is not cropped
+        if left_x_col==0 and right_x_col==image.shape[1]:
+            assert crop_image.shape[1]==image.shape[1]
+
+        # check that if the distance between left and right coordinates is the min_x_size, the cropped image is of size min_x_size
+        if right_x_col-left_x_col==min_x_size:
+            assert crop_image.shape[1]==min_x_size
+
+    # crop both the first and the second dimensions otherwise
+    else:
+        
+        # get the coordinates for the cropping
+        top_y_row, bot_y_row = crop_dimension(image1=image, dimension2use=0, min_size=min_y_size)
+
+        # get the coordinates for the cropping
+        left_x_col , right_x_col = crop_dimension(image1=image, dimension2use=1, min_size=min_x_size)
+
+        # crop the image
+        crop_image = image[top_y_row:bot_y_row,left_x_col:right_x_col]
+
+        # check that if top and bot y_row coordinates are at the edge, the image is not cropped
+        if top_y_row==0 and bot_y_row==image.shape[0]:
+            assert crop_image.shape[0]==image.shape[0]
+
+        # check that if the distance between top and bot coordinates is the min_y_size, the cropped image is of size min_y_size
+        if bot_y_row-top_y_row==min_y_size:
+            assert crop_image.shape[0]==min_y_size
+
+        # check that if left and right x_col coordinates are at the edge, the image is not cropped
+        if left_x_col==0 and right_x_col==image.shape[1]:
+            assert crop_image.shape[1]==image.shape[1]
+
+        # check that if the distance between left and right coordinates is the min_x_size, the cropped image is of size min_x_size
+        if right_x_col-left_x_col==min_x_size:
+            assert crop_image.shape[1]==min_x_size
+
+    return crop_image
+
+
+
 def measure_labelled_pixels_fraction(image):
     """
     returns the fraction of pixels which has value >0.
