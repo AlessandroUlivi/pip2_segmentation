@@ -57,6 +57,7 @@ In order to run the scripts with gpu support:
 
 Roadmap:
 2025/01/14. Need to:
+0) add DiceBCELoss and BCE_EdgeDiceLoss's weights to the text in the SummaryWriter.
 1) complete the documentation of test_model within test_model.py (log_image_interv is not in the input variables, step is missing).
 2) pass a proper step to test_model in run_test.ipynb.
 3) change initial markdown of run_test.ipynb.
