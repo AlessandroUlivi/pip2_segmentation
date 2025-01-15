@@ -57,7 +57,6 @@ In order to run the scripts with gpu support:
 
 Roadmap:
 2025/01/14. Need to:
-0) add DiceBCELoss and BCE_EdgeDiceLoss's weights to the text in the SummaryWriter.
 1) complete the documentation of test_model within test_model.py (log_image_interv is not in the input variables, step is missing).
 2) pass a proper step to test_model in run_test.ipynb.
 3) change initial markdown of run_test.ipynb.
@@ -65,7 +64,6 @@ Roadmap:
 5) properly write the notebooks' markdowns.
 6) document interpolate_curve in utils.py
 7) check that the model works properly whit different depth, kernel size and padding (I can't remember if I did this already)
-8) git-ignore pycache
 9) don't save all the "empty" masks for the validation and test datasets, but only some of them
 10) randomise the chunking of the images to avoid the bias of having pip2 enriched domains only at boarders
 11) join train and validation datasets when generating them, avoiding masks with no labelled pixels, to form the dataset used for the final training
