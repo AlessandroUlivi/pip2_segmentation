@@ -175,6 +175,45 @@ def chunk_center(image, chunk_y=256, chunk_x=256):
 
     return chunk_collection_array, coords_collection_tuple
 
+def crop_dimension(image1, dimension2use, min_size):
+    # randomize the choice between picking the smaller coordinate first and larger coordinate second or the opposite
+    small_first = random.choice([True, False])
+
+    # if small_first coordinate is picked first
+    if small_first:
+
+        # randomly pick the small coordinate, making sure that it will not result in a cropped image of size smaller than min_size
+        small_coord = random.choice(range(0,image1.shape[dimension2use]-min_size+1))
+
+        # check that small coordinate is not closer to the image size than the min_size
+        assert small_coord + min_size <= image1.shape[dimension2use]
+
+        # randomly pick the larger coordinate, making sure that it will not result in a cropped image of size smaller than min_size
+        if small_coord + min_size == image1.shape[dimension2use]:
+            large_coord = image1.shape[dimension2use]
+        else:
+            large_coord = random.choice(range(small_coord + min_size, image1.shape[dimension2use]+1))
+        
+    else:
+        # randomly pick the large coordinate, making sure that it will not result in a cropped image of size smaller than min_size
+        large_coord = random.choice(range(min_size, image1.shape[dimension2use]+1))
+
+        # check that large_coord coordinate is not bigger than the image size
+        assert large_coord<=image1.shape[dimension2use]
+
+        # randomly pick the small coordinate, making sure that it will not result in a cropped image of size smaller than min_size
+        if large_coord == min_size:
+            small_coord = 0
+        else:
+            small_coord = random.choice(range(0, large_coord - min_size+1))
+
+    # security checks
+    assert small_coord>=0
+    assert large_coord<=image1.shape[dimension2use]
+    assert large_coord-small_coord>=min_size
+
+    return small_coord, large_coord
+
 
 def random_crop(image, min_y_size=256, min_x_size=256):
     """
@@ -185,45 +224,6 @@ def random_crop(image, min_y_size=256, min_x_size=256):
     assert min_y_size<=image.shape[0], "min_y_size must be <= of input image y dimension"
     assert min_x_size>0, "min_y_size must be >1"
     assert min_x_size<=image.shape[1], "min_x_size must be <= of input image x dimension"
-
-    def crop_dimension(image1, dimension2use, min_size):
-        # randomize the choice between picking the smaller coordinate first and larger coordinate second or the opposite
-        small_first = random.choice([True, False])
-
-        # if small_first coordinate is picked first
-        if small_first:
-
-            # randomly pick the small coordinate, making sure that it will not result in a cropped image of size smaller than min_size
-            small_coord = random.choice(range(0,image1.shape[dimension2use]-min_size+1))
-
-            # check that small coordinate is not closer to the image size than the min_size
-            assert small_coord + min_size <= image1.shape[dimension2use]
-
-            # randomly pick the larger coordinate, making sure that it will not result in a cropped image of size smaller than min_size
-            if small_coord + min_size == image1.shape[dimension2use]:
-                large_coord = image1.shape[dimension2use]
-            else:
-                large_coord = random.choice(range(small_coord + min_size, image1.shape[dimension2use]+1))
-        
-        else:
-            # randomly pick the large coordinate, making sure that it will not result in a cropped image of size smaller than min_size
-            large_coord = random.choice(range(min_size, image1.shape[dimension2use]+1))
-
-            # check that large_coord coordinate is not bigger than the image size
-            assert large_coord<=image1.shape[dimension2use]
-
-            # randomly pick the small coordinate, making sure that it will not result in a cropped image of size smaller than min_size
-            if large_coord == min_size:
-                small_coord = 0
-            else:
-                small_coord = random.choice(range(0, large_coord - min_size+1))
-
-        # security checks
-        assert small_coord>=0
-        assert large_coord<=image1.shape[dimension2use]
-        assert large_coord-small_coord>=min_size
-
-        return small_coord, large_coord
 
     # retun the image is min_y_size and min_x_size are equal to the sizes of image
     if min_y_size==image.shape[0] and min_x_size==image.shape[1]:
