@@ -92,7 +92,7 @@ def minmax_normalization(image, axis=(0,1)):
 
 def chunk_center(image, chunk_y=256, chunk_x=256):
     """
-    divides a 2D image in chunks of size chunk_y * chunk_x. When the image can't be perfectly divided, chunks are centered so that a padding remains
+    divides a 2D image in non-overlapping chunks of size chunk_y * chunk_x. When the image can't be perfectly divided, chunks are centered so that a padding remains
     at the image boarder.
 
     Inputs:
@@ -174,6 +174,92 @@ def chunk_center(image, chunk_y=256, chunk_x=256):
     coords_collection_tuple = tuple(coords_collection_list)
 
     return chunk_collection_array, coords_collection_tuple
+
+# def chunk_from_random_point(image, chunk_y=256, chunk_x=256):
+#     """
+#     divides a 2D image in non-overlapping chunks of size chunk_y * chunk_x. When the image can't be perfectly divided, chunks are centered so that a padding remains
+#     at the image boarder.
+
+#     Inputs:
+#     - image. 2D numpy array.
+#     - chunk_y. Int. Default 256. The size, in pixels, of the y axis of each single chunk. It must be <= of the size of the y axis of image.
+#     - chunk_x. Int. Default 256. The size, in pixels, of the x axis of each single chunk. It must be <= of the size of the x axis of image.
+
+#     Outputs: tuple.
+#     - position 0. 3D numpy array. image chunks are stacked on axis 0.
+#     - position 1. tuple. Per each chunk, the y,x coordinates of the upper-left pixels are reported.
+
+#     NOTE: 1) when image is not perfectly dividable by the chunk dimension along an axis, one extra pixels is left in the padding on the bottom and/or right
+#     edges.
+#     2) The chunking process is iterative, it is thus possible to know the order of the chunks in the output. They will proceed by columns, from left to right
+#     and then by row from top to bottom. Thus the first chunk of the output will be the one on the top-left corner and the last the one on the bottom-right corner.
+#     """
+#     #calculate the number of chunks fitting the y axis
+#     y_chunks_n = image.shape[0]//chunk_y
+#     #calculate the padding on the y axis
+#     y_leftover_pixels = image.shape[0]%chunk_y
+#     if y_leftover_pixels%2==0:
+#         top_y_padding = int(y_leftover_pixels/2)
+#         bot_y_padding = int(y_leftover_pixels/2) #this is ultimately not required
+#     else:
+#         top_y_padding = int((y_leftover_pixels-1)/2+1)
+#         bot_y_padding = int((y_leftover_pixels-1)/2) #this is utlimately not required
+    
+#     #calculate the number of chunks fitting the x axis
+#     x_chunks_n = image.shape[1]//chunk_x
+#     #calculate the padding on the x axis
+#     x_leftover_pixels = image.shape[1]%chunk_x
+#     if x_leftover_pixels%2==0:
+#         left_x_padding = int(x_leftover_pixels/2)
+#         right_x_padding = int(x_leftover_pixels/2) #this is ulitmately not required
+#     else:
+#         left_x_padding = int((x_leftover_pixels-1)/2+1)
+#         right_x_padding = int((x_leftover_pixels-1)/2) #this is ultimately not required
+    
+#     assert (y_chunks_n*chunk_y)+top_y_padding+bot_y_padding==image.shape[0], "the pixels splitting did not work on the y axis"
+#     assert (x_chunks_n*chunk_x)+left_x_padding+right_x_padding==image.shape[1], "the pixels splitting did not work on the x axis"
+
+#     #initialize a collection list for the chunks, to be used to form the output array
+#     chunk_collection_list = []
+
+#     #intialize a collection list for the coordinated of the top-left pixels of each chunk, to be used for the output tuple
+#     coords_collection_list = []
+
+#     #initialize the starting position of the highest chunk on the y axis
+#     y_start = top_y_padding
+
+#     #iterate through the number of chunks which could be fit on the y axis
+#     for y in range(y_chunks_n):
+
+#         #initialize the starting position of the chunk on the far left on the x axis
+#         x_start = left_x_padding
+
+#         #iterate through the number of chunks which could be fit on the x axis
+#         for x in range(x_chunks_n):
+
+#             #slice image to obtain the chunck
+#             chunk = image[y_start:y_start+chunk_y, x_start:x_start+chunk_x]
+            
+#             #add the chunk to the collection list
+#             chunk_collection_list.append(chunk)
+
+#             #add the coordinates to the collection list
+#             coords_collection_list.append((y_start,x_start))
+
+#             #update x_start, so that the following chunk will start from the end of the previous
+#             x_start = x_start+chunk_x
+        
+#         #update y_start, so that the following chunk will start from the end of the previous
+#         y_start = y_start+chunk_y
+    
+#     #transform chunk collection list in an array
+#     chunk_collection_array = np.stack(chunk_collection_list, axis=0)
+
+#     #transform coordinates collection list in a tuple
+#     coords_collection_tuple = tuple(coords_collection_list)
+
+#     return chunk_collection_array, coords_collection_tuple
+
 
 def measure_labelled_pixels_fraction(image):
     """
