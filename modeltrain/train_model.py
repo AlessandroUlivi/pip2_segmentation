@@ -15,6 +15,7 @@ def train(model,
           optimizer,
           loss_function,
           epoch,
+          use_loss_weights_range=False,
           bce_weight=1,
           dice_weight=1,
           loss_function_range=[0,1],
@@ -36,6 +37,8 @@ def train(model,
     - optimizer. The optimizer of the training process. An object from PyTorch is expected. Refer to https://pytorch.org/docs/stable/optim.html
     - loss_function. The loss_function of the training processs. An object from PyTorch is expected. Refer to https://pytorch.org/docs/stable/nn.html#loss-functions
     - epoch. Int. The epoch number within the training process.
+    - use_loss_weights_range. Bool. Optional. Default False. Whether or not, when calling the loss_function, the functions inputs bce_weight, dice_weight and loss_function_range
+    are passed to the function or not. The parameter is introduced because some loss functions (e.g. DiceLoss, BCELoss) don't expect these parameters.
     - bce_weight. Int or float. Optional. Default 1. The weight of the BCELoss in the loss function.
     - dice_weight. Int or float. Optional. Default. 1. The weight of the DiceLoss in the loss function.
     - loss_function_range. List-like of 2 int or float. Optional. Default [0,1]. The min (value in position 0) and max (value in position 1) values of the
@@ -111,11 +114,11 @@ def train(model,
         if y.dtype != prediction.dtype:
             y = y.type(prediction.dtype)
         
-        #calculate the loss value - NOTE THAT THIS CODE ASSUMES THE USE OF EITHER DiceBCELoss or BCE_EdgeDiceLoss - to use something different 
-        # comment out the line with loss function containing bce_weight, dice_weight and range_v
-        # and comment in the line with the loss function containing only prediction and y
-        loss = loss_function(prediction, y, bce_weight=bce_weight, dice_weight=dice_weight, range_v=loss_function_range)
-        # loss = loss_function(prediction, y)
+        #calculate the loss value
+        if use_loss_weights_range:
+            loss = loss_function(prediction, y, bce_weight=bce_weight, dice_weight=dice_weight, range_v=loss_function_range)
+        else:
+            loss = loss_function(prediction, y)
 
         # backpropagate the loss and adjust the parameters
         loss.backward()
@@ -193,6 +196,7 @@ def run_training(model,
                  val_loader,
                  loss_function,
                  bin_threshold=0.5,
+                 use_loss_weights_range=False,
                  bce_weight=1,
                  dice_weight=1,
                  loss_function_range=[0,1],
@@ -219,6 +223,8 @@ def run_training(model,
     - val_loader. Validation data organized in minibatches for the epoch (with inputs and labels). A DataLoader object form torch.utils.data is expected. Refer to https://pytorch.org/tutorials/beginner/basics/data_tutorial.html
     - loss_function. The loss_function of the training processs. An object from PyTorch is expected. Refer to https://pytorch.org/docs/stable/nn.html#loss-functions
     - bin_threshold. Float. Optional. Default 0.5. The value to use as highpass threshold for binarizing the predicted image before calculating the metric.
+    - use_loss_weights_range. Bool. Optional. Default False. Whether or not, when calling the loss_function, the functions inputs bce_weight, dice_weight and loss_function_range
+    are passed to the function or not. The parameter is introduced because some loss functions (e.g. DiceLoss, BCELoss) don't expect these parameters.
     - bce_weight. Int or float. Optional. Default 1. The weight of the BCELoss in the loss function.
     - dice_weight. Int or float. Optional. Default. 1. The weight of the DiceLoss in the loss function.
     - loss_function_range. List-like of 2 int or float. Optional. Default [0,1]. The min (value in position 0) and max (value in position 1) values of the
@@ -267,6 +273,7 @@ def run_training(model,
               optimizer=optimizer,
               loss_function=loss_function,
               epoch=epoch,
+              use_loss_weights_range=use_loss_weights_range,
               bce_weight=bce_weight,
               dice_weight=dice_weight,
               loss_function_range=loss_function_range,
@@ -313,6 +320,7 @@ def run_training_no_val(model,
                         train_loader,
                         loss_function,
                         bin_threshold=0.5,
+                        use_loss_weights_range=False,
                         bce_weight=1,
                         dice_weight=1,
                         loss_function_range=[0,1],
@@ -329,6 +337,8 @@ def run_training_no_val(model,
                         best_metric_init = 0):
     
     """
+    NOTE 2025/01/16: THIS FUNCTION NEEDS PROPER TESTING
+
     trains a model over multiple epochs without validation. This function can be used to train a final model using the full data (train data + val data
     + test data).
     Exploits TensorBoard to keep track of the training progress (variation of the loss function).
@@ -345,6 +355,8 @@ def run_training_no_val(model,
     - train_loader. Train data organized in minibatches for the epoch (with inputs and labels). A DataLoader object form torch.utils.data is expected. Refer to https://pytorch.org/tutorials/beginner/basics/data_tutorial.html
     - loss_function. The loss_function of the training processs. An object from PyTorch is expected. Refer to https://pytorch.org/docs/stable/nn.html#loss-functions
     - bin_threshold. Float. Optional. Default 0.5. The value to use as highpass threshold for binarizing the predicted image before calculating the metric.
+    - use_loss_weights_range. Bool. Optional. Default False. Whether or not, when calling the loss_function, the functions inputs bce_weight, dice_weight and loss_function_range
+    are passed to the function or not. The parameter is introduced because some loss functions (e.g. DiceLoss, BCELoss) don't expect these parameters.
     - bce_weight. Int or float. Optional. Default 1. The weight of the BCELoss in the loss function.
     - dice_weight. Int or float. Optional. Default. 1. The weight of the DiceLoss in the loss function.
     - loss_function_range. List-like of 2 int or float. Optional. Default [0,1]. The min (value in position 0) and max (value in position 1) values of the
@@ -393,6 +405,7 @@ def run_training_no_val(model,
                                                  optimizer=optimizer,
                                                  loss_function=loss_function,
                                                  epoch=epoch,
+                                                 use_loss_weights_range=use_loss_weights_range,
                                                  bce_weight=bce_weight,
                                                  dice_weight=dice_weight,
                                                  loss_function_range=loss_function_range,
