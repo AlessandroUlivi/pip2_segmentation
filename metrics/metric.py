@@ -65,14 +65,15 @@ class DiceBCELoss(nn.Module):
     def __init__(self):
         super(DiceBCELoss, self).__init__()
 
-    def forward(self, prediction, target, eps=1e-6, reduction="mean", bce_weight=1, dice_weight=1):    
+    def forward(self, prediction, target, reduction="mean", bce_weight=1, dice_weight=1, range_v = [0,1], eps=1e-6):    
         intersection = torch.sum(prediction*target)   
         union = torch.sum(prediction)+torch.sum(target)                       
         dice_loss = 1 - (2 * intersection / union.clamp(min=eps))
         BCE = F.binary_cross_entropy(prediction, target, reduction=reduction)
         Dice_BCE = (bce_weight*BCE + dice_weight*dice_loss)/(bce_weight+dice_weight)
-        
-        return Dice_BCE
+        rescaled_Dice_BCE = Dice_BCE * (range_v [1] - range_v[0]) + range_v[0] + eps
+
+        return rescaled_Dice_BCE
 
 class FocalLoss(nn.Module):
     """
@@ -137,7 +138,7 @@ class BCE_EdgeDiceLoss(nn.Module):
     def __init__(self):
         super(BCE_EdgeDiceLoss, self).__init__()
 
-    def forward(self, prediction, target, reduction="mean", bce_weight=1, dice_weight=1, eps=1e-6):
+    def forward(self, prediction, target, reduction="mean", bce_weight=1, dice_weight=1, range_v = [0,1], eps=1e-6):
         
         gx_prediction, gy_prediction = torch.gradient(prediction[0,0,...])
         gx_target, gy_target = torch.gradient(target[0,0,...])
@@ -151,6 +152,7 @@ class BCE_EdgeDiceLoss(nn.Module):
         edge_dice_loss = 1 - (2 * edge_intersection / edge_union.clamp(min=eps))
         BCE = F.binary_cross_entropy(prediction, target, reduction=reduction)
         BCE_EdgeDice = (bce_weight*BCE + dice_weight*edge_dice_loss)/(bce_weight+dice_weight)
+        rescaled_BCE_EdgeDice = BCE_EdgeDice * (range_v [1] - range_v[0]) + range_v[0] + eps
         
-        return BCE_EdgeDice
+        return rescaled_BCE_EdgeDice
 
