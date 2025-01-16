@@ -70,5 +70,16 @@ Roadmap:
 11) join train and validation datasets when generating them, avoiding masks with no labelled pixels, to form the dataset used for the final training
 
 2025/01/15. Done:
-8) add bce_weight and and dice_weigth to dictionary saved by summary writer in run_training_w_validation notebook. 
+8) add bce_weight and and dice_weigth to dictionary saved by summary writer in run_training_w_validation notebook.
 
+2025/01/16. Need to:
+12) check that loss function range implementation for DiceBCELoss and BCE_EdgeDiceLoss is working properly using the test_training and the run_training_w_validation notebooks.
+13) implement a switch for whether or not weights and range should be used when training, as as they are at the moment, only DiceBCELoss and BCE_EdgeDiceLoss
+loss functions can be used, whic is rediculous. This include introducing the switch in the train function within train_model.py. Passing this switch to
+run_training and run_training_no_val functions also in train_model.py. Introduce the switch in test_training and run_training_w_validation notebooks, including
+the saving of the parameter in the summary writer.
+14) Transfer the above changes (train_model.py, run_training_w_validation) to Google Colab.
+15) Test in Google Colab that the implementation of weights, range and switch works properly (when bce_weight=1, dice_weigth=1 and range_v=[0,2] I must obtain the results of 2024/11/12).
+16) Implement the weights, loss function range and "weights switch" in test_model function within test_model.py and report it when it is used in run_training within train_model.py
+17) Work on run_test notebook, to implement weights, loss_function_range and "weights switch", pass them properly to test_model and complete the proper encoding of the hypeparameters in the Summary Writer. 
+18) Properly document crop_dimension and random_crop in utils_funct.py
