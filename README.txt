@@ -77,7 +77,7 @@ Roadmap:
 13) implement a switch for whether or not weights and range should be used when training, as as they are at the moment, only DiceBCELoss and BCE_EdgeDiceLoss
 loss functions can be used, whic is rediculous. This include introducing the switch in the train function within train_model.py. Passing this switch to
 run_training and run_training_no_val functions also in train_model.py. Introduce the switch in test_training and run_training_w_validation notebooks, including
-the saving of the parameter in the summary writer.
+the saving of the parameter in the summary writer. To function properly the switch must allow working again with loss functions without weigths and ranges, as the DiceLoss and BCELoss.
 14) Transfer the above changes (train_model.py, run_training_w_validation) to Google Colab.
 15) Test in Google Colab that the implementation of weights, range and switch works properly (when bce_weight=1, dice_weigth=1 and range_v=[0,2] I must obtain the results of 2024/11/12).
 16) Implement the weights, loss function range and "weights switch" in test_model function within test_model.py and report it when it is used in run_training within train_model.py
