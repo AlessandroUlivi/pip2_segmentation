@@ -17,6 +17,7 @@ def train(model,
           epoch,
           bce_weight=1,
           dice_weight=1,
+          loss_function_range=[0,1],
           log_interval=100,
           log_image_interval=20,
           tb_logger=None,
@@ -37,6 +38,8 @@ def train(model,
     - epoch. Int. The epoch number within the training process.
     - bce_weight. Int or float. Optional. Default 1. The weight of the BCELoss in the loss function.
     - dice_weight. Int or float. Optional. Default. 1. The weight of the DiceLoss in the loss function.
+    - loss_function_range. List-like of 2 int or float. Optional. Default [0,1]. The min (value in position 0) and max (value in position 1) values of the
+    range of the loss_function.
     - log_interval. Int. Optional. Default 100. After how many batches the TensorBoard console is updated by saving the loss function,
     in order to track the progression of the training process.
     - log_image_interval. Int. Optional. Default 20. After how many batches the TensorBoard console is updated by saving the prediction results,
@@ -108,8 +111,11 @@ def train(model,
         if y.dtype != prediction.dtype:
             y = y.type(prediction.dtype)
         
-        #calculate the loss value
-        loss = loss_function(prediction, y, bce_weight=bce_weight, dice_weight=dice_weight)
+        #calculate the loss value - NOTE THAT THIS CODE ASSUMES THE USE OF EITHER DiceBCELoss or BCE_EdgeDiceLoss - to use something different 
+        # comment out the line with loss function containing bce_weight, dice_weight and range_v
+        # and comment in the line with the loss function containing only prediction and y
+        loss = loss_function(prediction, y, bce_weight=bce_weight, dice_weight=dice_weight, range_v=loss_function_range)
+        # loss = loss_function(prediction, y)
 
         # backpropagate the loss and adjust the parameters
         loss.backward()
@@ -189,6 +195,7 @@ def run_training(model,
                  bin_threshold=0.5,
                  bce_weight=1,
                  dice_weight=1,
+                 loss_function_range=[0,1],
                  logger=None,
                  log_interval=100,
                  log_image_interval=20,
@@ -214,6 +221,8 @@ def run_training(model,
     - bin_threshold. Float. Optional. Default 0.5. The value to use as highpass threshold for binarizing the predicted image before calculating the metric.
     - bce_weight. Int or float. Optional. Default 1. The weight of the BCELoss in the loss function.
     - dice_weight. Int or float. Optional. Default. 1. The weight of the DiceLoss in the loss function.
+    - loss_function_range. List-like of 2 int or float. Optional. Default [0,1]. The min (value in position 0) and max (value in position 1) values of the
+    range of the loss_function.
     - logger. TensorBoard logger. To keep track of progress. Refer to https://www.tensorflow.org/tensorboard?hl=it
     - log_interval. Int. Optional. Default 100. After how many batches the TensorBoard console is updated by saving the loss function,
     in order to track the progression of the training process.
@@ -260,6 +269,7 @@ def run_training(model,
               epoch=epoch,
               bce_weight=bce_weight,
               dice_weight=dice_weight,
+              loss_function_range=loss_function_range,
               log_interval=log_interval,
               log_image_interval=log_image_interval,
               tb_logger=logger,
@@ -305,6 +315,7 @@ def run_training_no_val(model,
                         bin_threshold=0.5,
                         bce_weight=1,
                         dice_weight=1,
+                        loss_function_range=[0,1],
                         logger=None,
                         log_interval=100,
                         log_image_interval=20,
@@ -336,6 +347,8 @@ def run_training_no_val(model,
     - bin_threshold. Float. Optional. Default 0.5. The value to use as highpass threshold for binarizing the predicted image before calculating the metric.
     - bce_weight. Int or float. Optional. Default 1. The weight of the BCELoss in the loss function.
     - dice_weight. Int or float. Optional. Default. 1. The weight of the DiceLoss in the loss function.
+    - loss_function_range. List-like of 2 int or float. Optional. Default [0,1]. The min (value in position 0) and max (value in position 1) values of the
+    range of the loss_function.
     - logger. TensorBoard logger. To keep track of progress. Refer to https://www.tensorflow.org/tensorboard?hl=it
     - log_interval. Int. Optional. Default 100. After how many batches the TensorBoard console is updated by saving the loss function,
     in order to track the progression of the training process.
@@ -382,6 +395,7 @@ def run_training_no_val(model,
                                                  epoch=epoch,
                                                  bce_weight=bce_weight,
                                                  dice_weight=dice_weight,
+                                                 loss_function_range=loss_function_range,
                                                  log_interval=log_interval,
                                                  log_image_interval=log_image_interval,
                                                  tb_logger=logger,
