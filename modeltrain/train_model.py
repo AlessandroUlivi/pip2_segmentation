@@ -134,7 +134,7 @@ def train(model,
             cum_loss_val += loss.item()
             cum_metric_val += metric_val
         
-        # print("=== BEFORE UNET ===")
+        # print("=== AFTER UNET ===")
         # print("x shape: ", x.size())
         # print("x dtype: ", x.dtype)
         # print("x max: ", np.amax(x.detach().numpy()))
