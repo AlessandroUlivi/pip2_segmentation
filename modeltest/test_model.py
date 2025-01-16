@@ -14,6 +14,10 @@ def test_model(
     loss_function,
     metric,
     bin_threshold=0.5,
+    use_loss_weights_range=False,
+    bce_weight=1,
+    dice_weight=1,
+    loss_function_range=[0,1],
     step=None,
     tb_logger=None,
     device=None,
@@ -30,6 +34,12 @@ def test_model(
     - loss_function. The loss_function of the training processs. An object from PyTorch is expected. Refer to https://pytorch.org/docs/stable/nn.html#loss-functions
     - metric. Function or class. The metric to use for evaluating the results.
     - bin_threshold. Float. Optional. Default 0.5. The value to use as highpass threshold for binarizing the predicted image before calculating the metric.
+    - use_loss_weights_range. Bool. Optional. Default False. Whether or not, when calling the loss_function, the functions inputs bce_weight, dice_weight and loss_function_range
+    are passed to the function or not. The parameter is introduced because some loss functions (e.g. DiceLoss, BCELoss) don't expect these parameters.
+    - bce_weight. Int or float. Optional. Default 1. The weight of the BCELoss in the loss function.
+    - dice_weight. Int or float. Optional. Default. 1. The weight of the DiceLoss in the loss function.
+    - loss_function_range. List-like of 2 int or float. Optional. Default [0,1]. The min (value in position 0) and max (value in position 1) values of the
+    range of the loss_function.
     - log_image_interval. Int. Optional. Default 20. After how many batches the TensorBoard console is updated by saving the prediction results,
     in order to track the progression of the training process.
     - tb_logger. TensorBoard logger. To keep track of progress. Refer to https://www.tensorflow.org/tensorboard?hl=it
@@ -90,7 +100,11 @@ def test_model(
             # print("pred min: ", np.amin(prediction.detach().numpy()))
 
             # calculate the loss value
-            loss_val = loss_function(prediction,y)
+            #calculate the loss value
+            if use_loss_weights_range:
+                loss_val = loss_function(prediction, y, bce_weight=bce_weight, dice_weight=dice_weight, range_v=loss_function_range)
+            else:
+                loss_val = loss_function(prediction,y)
 
             # calculate the metric value after binarizing the predictions
             binary_prediction = torch.where(prediction>bin_threshold, 1,0)
