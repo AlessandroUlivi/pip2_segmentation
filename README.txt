@@ -86,6 +86,7 @@ the saving of the parameter in the summary writer. To function properly the swit
 19) transfer test_model.py changes (implementation of weights, loss function range and "weights switch") to Google Colab.
 
 Done:
+2) pass a proper step to test_model in run_test.ipynb. THIS WAS CORRECT, NO STEP SHOULD BE PASSED TO test_model IN run_test.ipynb.
 12) check that loss function range implementation for DiceBCELoss and BCE_EdgeDiceLoss is working properly using the test_training and the run_training_w_validation notebooks. 
 13) implement a switch for whether or not weights and range should be used when training, as as they are at the moment, only DiceBCELoss and BCE_EdgeDiceLoss
 loss functions can be used, which is rediculous. This includes introducing the switch in the train function within train_model.py. Passing this switch to
