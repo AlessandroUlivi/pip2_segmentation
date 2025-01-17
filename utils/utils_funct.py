@@ -255,7 +255,7 @@ def random_crop(image, min_y_size=256, min_x_size=256):
     
     # only crop the x dimension is min_y_size is equal to the size of image
     elif min_y_size==image.shape[0] and min_x_size!=image.shape[1]:
-        
+
         # get the coordinates for the cropping
         left_x_col , right_x_col = crop_dimension(image1=image, dimension2use=1, min_size=min_x_size)
         
@@ -542,6 +542,23 @@ def load_tensorboard_data_df(reloaded_event_accumul, tb_variable):
     return df
 
 def interpolate_curve(x,y,n=500, **kwargs):
+    """
+    Given the coordinates of a series of points in a 2 dimensional space, the function returns the coordinates of the points for a curve
+    interpolating input.
+
+    The code is taken from https://stackoverflow.com/questions/66761283/how-to-make-my-plot-smoother-with-my-data
+
+    Inputs:
+    - x. Array-like of shape (i,). Abscissas (https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.make_interp_spline.html).
+    - y. Array-like of shape (i,). Ordinates (https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.make_interp_spline.html).
+    - n. Int. Optional, default 500. The number of output points for the interpolated curve.
+    - kwargs. Optional parameters to pass to scipy.interpolate.make_interp_spline (https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.make_interp_spline.html).
+
+    Outputs: tuple.
+    - position 0. Numpy arra of shape (n, ). The abscissas of the n points for the curve interpolating the input.
+    - position 1. Numpy arra of shape (n, ). The ordinates of the n points for the curve interpolating the input.
+    
+    """
     X_Y_Spline = make_interp_spline(x, y, **kwargs)
     X_ = np.linspace(x.min(), x.max(), n)
     Y_ = X_Y_Spline(X_)
