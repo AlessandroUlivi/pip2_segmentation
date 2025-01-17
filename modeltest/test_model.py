@@ -40,8 +40,7 @@ def test_model(
     - dice_weight. Int or float. Optional. Default. 1. The weight of the DiceLoss in the loss function.
     - loss_function_range. List-like of 2 int or float. Optional. Default [0,1]. The min (value in position 0) and max (value in position 1) values of the
     range of the loss_function.
-    - log_image_interval. Int. Optional. Default 20. After how many batches the TensorBoard console is updated by saving the prediction results,
-    in order to track the progression of the training process.
+    - step. Int. The step of the model training or test process to be passed to tb_logger for logging metrics in Tensorboard Summary Writer.
     - tb_logger. TensorBoard logger. To keep track of progress. Refer to https://www.tensorflow.org/tensorboard?hl=it
     - device. Optional. None or device. Default None. The device to use for the validation. If None, it will automatically checked if a cuda gpu is available.
     If available, it will be used. If not available, the cpu will be used.
