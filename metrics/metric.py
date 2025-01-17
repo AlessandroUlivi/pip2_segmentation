@@ -59,8 +59,39 @@ class DiceLoss(nn.Module):
 
 class DiceBCELoss(nn.Module):
     """
-    combination of BCE and DiceLoss. This code is adapted from https://www.kaggle.com/code/bigironsphere/loss-function-library-keras-pytorch
+    weighted combination of binary cross entropy loss (BCELoss) and dice loss (DiceLoss) functions.
+    
+    This code is adapted from https://www.kaggle.com/code/bigironsphere/loss-function-library-keras-pytorch
+    
+    The function:
+    1) calculates the binary cross entropy loss (https://pytorch.org/docs/stable/generated/torch.nn.functional.binary_cross_entropy.html)
+    and the dice loss (1 - Dice Coefficient) between the probabilities of two tensors (prediction and target).
+    2) calculates a weighted average of the the binary cross entropy loss and the dice loss. The weights of the two loss functions are inputed using the
+    bce_weight and dice_weight parameters, respectively. As a weighted average the result value is in the 0-1 value range. The formula for the weighted
+    average is: weighted_average = ((bce_weight * bce_loss) + (dice_weight * dice_loss)) / (bce_weight + dice_weight).
+    3) rescales the value output of point 2 in the range value indicated by range_v.
+
     Values of prediction and target are expected to be in the 0-1 range (e.g. for prediction, they have been obtained from a Sigmoid activation function).
+
+    Inputs:
+    - prediction. Tensor. Binary mask with forwground pixels having value 1 and background pixels having value 0 or probability mask in the 0-1 value range.
+    - target. Tensor. Binary mask with forwground pixels having value 1 and background pixels having value 0 or probability mask in the 0-1 value range.
+    The shape (or size) must match the shape (or size) of prediction.
+    - reduction. String. Optional, default "mean". The reduction to apply to the output of BCELoss. Can be either "none", "mean" or "sum".
+    Refer to https://pytorch.org/docs/stable/generated/torch.nn.functional.binary_cross_entropy.html
+    bce_weight.
+    - bce_weight. Int or float. Optional, default 1. The weight of the binary cross entropy loss value in the output value. Note that as the weight is used
+    within a weighted average its value should be considered relative to the dice_weight value. 
+    - dice_weight. Int or float. Optional, default 1. The weight of the dice loss value in the output value. Note that as the weight is used
+    within a weighted average its value should be considered relative to the bce_weight value.
+    - range_v. List-like of two ints or floats. Optinal, default [0,1]. The value range onto which the result of binary cross entropy loss and
+    dice loss weighted average is rescaled. The int / float in position 0 is the min value of the output range, the int / float in position 1 is the
+    max value of the output range (e.g. by for the [0,1] default parameter, the value range is 0-1).
+    - eps. Int or float. Optional, default 1e-6. A constast used to avoit a 0 division in the calculation of the dice loss.
+
+    Output: Float. The weighted average of the binary cross entropy loss and the dice loss between prediction and target inputs. The weighted
+    average can be further rescaled on a wanted value range.
+
     """
     def __init__(self):
         super(DiceBCELoss, self).__init__()
@@ -134,6 +165,38 @@ class TverskyLoss(nn.Module):
 
 class BCE_EdgeDiceLoss(nn.Module):
     """
+    weighted combination of binary cross entropy loss (BCELoss) and a dice loss function (EdgeDiceLoss) calculated by only considered the
+    boarders of prediction and target probability masks.
+
+    The function:
+    1) calculates the binary cross entropy loss (https://pytorch.org/docs/stable/generated/torch.nn.functional.binary_cross_entropy.html).
+    2) segments the edges/boarders of the prediction and target probability masks using Canny algorithm.
+    3) calculates the dice loss (1 - Dice Coefficient) between the outputs of point 2 (EdgeDiceLoss).
+    3) calculates a weighted average of the the binary cross entropy loss and the EdgeDiceLoss. The weights of the two loss functions are inputed using the
+    bce_weight and dice_weight parameters, respectively. As a weighted average the result value is in the 0-1 value range. The formula for the weighted
+    average is: weighted_average = ((bce_weight * bce_loss) + (dice_weight * EdgeDiceLoss)) / (bce_weight + dice_weight).
+    3) rescales the value output of point 2 in the range value indicated by range_v.
+
+    Values of prediction and target are expected to be in the 0-1 range (e.g. for prediction, they have been obtained from a Sigmoid activation function).
+
+    Inputs:
+    - prediction. Tensor. Binary mask with forwground pixels having value 1 and background pixels having value 0 or probability mask in the 0-1 value range.
+    - target. Tensor. Binary mask with forwground pixels having value 1 and background pixels having value 0 or probability mask in the 0-1 value range.
+    The shape (or size) must match the shape (or size) of prediction.
+    - reduction. String. Optional, default "mean". The reduction to apply to the output of BCELoss. Can be either "none", "mean" or "sum".
+    Refer to https://pytorch.org/docs/stable/generated/torch.nn.functional.binary_cross_entropy.html
+    bce_weight.
+    - bce_weight. Int or float. Optional, default 1. The weight of the binary cross entropy loss value in the output value. Note that as the weight is used
+    within a weighted average its value should be considered relative to the dice_weight value. 
+    - dice_weight. Int or float. Optional, default 1. The weight of the dice loss value in the output value. Note that as the weight is used
+    within a weighted average its value should be considered relative to the bce_weight value.
+    - range_v. List-like of two ints or floats. Optinal, default [0,1]. The value range onto which the result of binary cross entropy loss and
+    dice loss weighted average is rescaled. The int / float in position 0 is the min value of the output range, the int / float in position 1 is the
+    max value of the output range (e.g. by for the [0,1] default parameter, the value range is 0-1).
+    - eps. Int or float. Optional, default 1e-6. A constast used to avoit a 0 division in the calculation of the dice loss.
+
+    Output: Float. The weighted average of the binary cross entropy loss and the dice loss between prediction and target inputs. The weighted
+    average can be further rescaled on a wanted value range.
     """
     def __init__(self):
         super(BCE_EdgeDiceLoss, self).__init__()
