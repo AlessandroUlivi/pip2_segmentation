@@ -176,7 +176,7 @@ def chunk_center(image, chunk_y=256, chunk_x=256):
     return chunk_collection_array, coords_collection_tuple
 
 
-def crop_dimension(image1, dimension2use, min_size):
+def dimension_random_points(image1, dimension2use, min_size):
     """
     Given an n-dimensional array (image1) and the position of one of its dimensions (dimension2use), the function returns two randomly chosen
     output values. The output values are chosen in the value range 0 - dimension2use's size. In addition, the output values are chosen so that
@@ -258,7 +258,7 @@ def random_crop(image, min_y_size=256, min_x_size=256):
     elif min_y_size!=image.shape[0] and min_x_size==image.shape[1]:
         
         # get the coordinates for the cropping
-        top_y_row, bot_y_row = crop_dimension(image1=image, dimension2use=0, min_size=min_y_size)
+        top_y_row, bot_y_row = dimension_random_points(image1=image, dimension2use=0, min_size=min_y_size)
         
         # crop the image
         crop_image = image[top_y_row:bot_y_row,:]
@@ -281,7 +281,7 @@ def random_crop(image, min_y_size=256, min_x_size=256):
     elif min_y_size==image.shape[0] and min_x_size!=image.shape[1]:
 
         # get the coordinates for the cropping
-        left_x_col , right_x_col = crop_dimension(image1=image, dimension2use=1, min_size=min_x_size)
+        left_x_col , right_x_col = dimension_random_points(image1=image, dimension2use=1, min_size=min_x_size)
         
         # crop the image
         crop_image = image[:,left_x_col:right_x_col]
@@ -304,10 +304,10 @@ def random_crop(image, min_y_size=256, min_x_size=256):
     else:
         
         # get the coordinates for the cropping
-        top_y_row, bot_y_row = crop_dimension(image1=image, dimension2use=0, min_size=min_y_size)
+        top_y_row, bot_y_row = dimension_random_points(image1=image, dimension2use=0, min_size=min_y_size)
 
         # get the coordinates for the cropping
-        left_x_col , right_x_col = crop_dimension(image1=image, dimension2use=1, min_size=min_x_size)
+        left_x_col , right_x_col = dimension_random_points(image1=image, dimension2use=1, min_size=min_x_size)
 
         # crop the image
         crop_image = image[top_y_row:bot_y_row,left_x_col:right_x_col]
