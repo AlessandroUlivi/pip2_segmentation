@@ -177,6 +177,22 @@ def chunk_center(image, chunk_y=256, chunk_x=256):
 
 
 def crop_dimension(image1, dimension2use, min_size):
+    """
+    Given an n-dimensional array (image1) and the position of one of its dimensions (dimension2use), the function returns two randomly chosen
+    output values. The output values are chosen in the value range 0 - dimension2use's size. In addition, the output values are chosen so that
+    their absolute difference is >= min_size.
+
+    Inputs:
+    - image1. n-dimensional array.
+    - dimension2use. Int. The dimension of image1 to use for calculating the output values. NOTE: the function hasn't been tested yet for
+    a dimensions of size 1.
+    - min_size. Int. Must be >0 and <= of dimension2use's size. The minimum absolute difference between output values.
+
+    Outputs: tuple of positive ints.
+    - position 0. The smaller value.
+    - position 1. The larger value.
+    """
+
     # randomize the choice between picking the smaller coordinate first and larger coordinate second or the opposite
     small_first = random.choice([True, False])
 
@@ -218,7 +234,15 @@ def crop_dimension(image1, dimension2use, min_size):
 
 def random_crop(image, min_y_size=256, min_x_size=256):
     """
-    NOTE: limit cases have not been tested for this function.
+    Given an 2-dimensional array (image) the function returns a crop of the image on both axes. The cropped output image is of a random size
+    (on both dimensions), however, the size of the y and x axes are >= to respective min_y_size and min_x_size.
+
+    Inputs:
+    - image. 2-dimensional array.
+    - min_y_size. Int. Must be >0 and <= image y axis' size. The minimum size of the y axis of the cropped image output.
+    - min_x_size. Int. Must be >0 and <= image x axis' size. The minimum size of the y axis of the cropped image output.
+
+    Outputs: 2-dimensional array. Random crop of image with y dimension of size >= min_y_size and x dimension of size >= min_x_size.
     """
     # verify that inputs are correct
     assert min_y_size>0, "min_y_size must be > 1"
@@ -541,10 +565,11 @@ def load_tensorboard_data_df(reloaded_event_accumul, tb_variable):
     df = pd.DataFrame({"step": x, tb_variable: y})
     return df
 
+
 def interpolate_curve(x,y,n=500, **kwargs):
     """
     Given the coordinates of a series of points in a 2 dimensional space, the function returns the coordinates of the points for a curve
-    interpolating input.
+    interpolating the input.
 
     The code is taken from https://stackoverflow.com/questions/66761283/how-to-make-my-plot-smoother-with-my-data
 
@@ -555,9 +580,9 @@ def interpolate_curve(x,y,n=500, **kwargs):
     - kwargs. Optional parameters to pass to scipy.interpolate.make_interp_spline (https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.make_interp_spline.html).
 
     Outputs: tuple.
-    - position 0. Numpy arra of shape (n, ). The abscissas of the n points for the curve interpolating the input.
-    - position 1. Numpy arra of shape (n, ). The ordinates of the n points for the curve interpolating the input.
-    
+    - position 0. Numpy array of shape (n, ). The abscissas of the n points for the curve interpolating the input.
+    - position 1. Numpy array of shape (n, ). The ordinates of the n points for the curve interpolating the input.
+
     """
     X_Y_Spline = make_interp_spline(x, y, **kwargs)
     X_ = np.linspace(x.min(), x.max(), n)
